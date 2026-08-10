@@ -1,0 +1,20 @@
+"""
+Router principal de la API v1
+"""
+
+from fastapi import APIRouter
+
+from app.api.v1.endpoints import (
+    health,
+    billing,
+    clients,
+    dashboard,
+)
+
+api_v1_router = APIRouter()
+
+# Incluir sub-routers
+api_v1_router.include_router(health.router, prefix="/health", tags=["Health"])
+api_v1_router.include_router(billing.router, prefix="/billing", tags=["Billing"])
+api_v1_router.include_router(clients.router, prefix="/clients", tags=["Clients"])
+api_v1_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
