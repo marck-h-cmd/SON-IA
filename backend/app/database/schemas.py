@@ -1,111 +1,99 @@
-"""
-Schemas Pydantic para validación de datos
-"""
-
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional
 
+from pydantic import BaseModel, Field
 
 # ============================================
-# Cliente
+# CLIENTES
 # ============================================
 class ClienteBase(BaseModel):
-    tipo_doc: str = Field(..., pattern="^(1|6)$", description="1=DNI, 6=RUC")
-    num_doc: str = Field(..., min_length=8, max_length=20)
-    nombre_razon_social: str = Field(..., min_length=1, max_length=255)
-    segmento: Optional[str] = Field(None, max_length=50)
-    email_contacto: Optional[EmailStr] = None
-    telefono_contacto: Optional[str] = Field(None, max_length=20)
-
+    numero_identificacion_fiscal: str = Field(..., max_length=20)
+    tipo_documento: Optional[str] = None
+    razon_social: Optional[str] = None
+    segmento_pais: Optional[str] = None
+    sunat_estado_ruc: Optional[str] = None
+    sunat_estado_contribuyente: Optional[str] = None
+    sunat_departamento: Optional[str] = None
+    sunat_provincia: Optional[str] = None
+    sunat_distrito: Optional[str] = None
 
 class ClienteCreate(ClienteBase):
-    id_cliente: int
-
+    pass
 
 class ClienteResponse(ClienteBase):
-    id_cliente: int
     score_confianza: Decimal = Field(default=Decimal("0.80"))
-    created_at: datetime
     
     class Config:
         from_attributes = True
 
-
 # ============================================
-# Factura
+# PLANTA (SERVICIOS)
 # ============================================
-class FacturaDetalleCreate(BaseModel):
-    id_servicio: int
-    concepto: Optional[str] = None
-    periodo_inicio: date
-    periodo_fin: date
-    monto_linea: Decimal
+class PlantaFijaBase(BaseModel):
+    numero_identificacion_fiscal: str
+    cod_cliente: Optional[str] = None
+    cod_cuenta: Optional[str] = None
+    ciclo: Optional[str] = None
+    fecha_alta: Optional[date] = None
+    status_desc: Optional[str] = None
+    ln_plan_desc: Optional[str] = None
+    ln_subscriber_status_desc: Optional[str] = None
+    int_plan_desc: Optional[str] = None
+    tv_plan_desc: Optional[str] = None
+    tv_tecnologia: Optional[str] = None
+    sub_main_offer_desc: Optional[str] = None
+    decos_cantidad: Optional[str] = None
 
-
-class FacturaCreate(BaseModel):
-    id_factura: int
-    id_cuenta: int
-    serie: str = Field(..., max_length=4)
-    correlativo: int
-    f_emision: date
-    f_vencimiento: date
-    detalles: List[FacturaDetalleCreate]
-
-
-class FacturaResponse(BaseModel):
-    id_factura: int
-    id_cuenta: int
-    serie: str
-    correlativo: int
-    f_emision: date
-    f_vencimiento: date
-    subtotal_gravado: Optional[Decimal] = None
-    igv_total: Optional[Decimal] = None
-    importe_total: Optional[Decimal] = None
-    estado_pago: Optional[str] = None
-    validacion_automatica: bool = False
-    
+class PlantaFijaResponse(PlantaFijaBase):
+    id: int
     class Config:
         from_attributes = True
 
+class PlantaMovilBase(BaseModel):
+    numero_identificacion_fiscal: str
+    cod_cliente: Optional[str] = None
+    cod_cuenta: Optional[str] = None
+    producto: Optional[str] = None
+    fecha_alta: Optional[date] = None
+    estado_linea: Optional[str] = None
+    tipo_linea: Optional[str] = None
+    plan_principal: Optional[str] = None
+    cant_promociones: Optional[str] = None
+    prom_dscto: Optional[str] = None
+    fecha_inicio_permanencia: Optional[date] = None
+    fecha_fin_permanencia: Optional[date] = None
+    meses_permanencia: Optional[str] = None
 
-# ============================================
-# Oferta de Negociación
-# ============================================
-class OfertaCreate(BaseModel):
-    id_factura: int
-    descuento_ofrecido: Decimal = Field(..., ge=0, le=100)
-    nuevo_plazo_dias: int = Field(..., gt=0)
-    fecha_limite_aceptacion: date
-
-
-class OfertaResponse(BaseModel):
-    id_oferta: int
-    id_factura: int
-    descuento_ofrecido: Decimal
-    estado: str
-    
+class PlantaMovilResponse(PlantaMovilBase):
+    id: int
     class Config:
         from_attributes = True
 
+# ============================================
+# FACTURAS Y PAGOS
+# ============================================
+class FacturaBase(BaseModel):
+    nro_doc_fiscal: str
+    numero_identificacion_fiscal: str
+    cod_cuenta: Optional[str] = None
+    fecha_emision: Optional[date] = None
+    fecha_vto: Optional[date] = None
+    charge_total_amount: Optional[Decimal] = None
+    moneda: Optional[str] = None
 
-# ============================================
-# Métricas Dashboard
-# ============================================
-class DashboardMetrics(BaseModel):
-    facturas_procesadas_hoy: int
-    monto_total_recaudado: Decimal
-    indice_morosidad: float
-    ofertas_activas: int
-    facturas_pendientes_revision: int
+class FacturaResponse(FacturaBase):
+    class Config:
+        from_attributes = True
 
+class PagoBase(BaseModel):
+    factura_afectada: str
+    numero_identificacion_fiscal: str
+    fecha_pago: Optional[date] = None
+    monto_pagado: Optional[Decimal] = None
+    moneda_factura: Optional[str] = None
 
-# ============================================
-# Health Check
-# ============================================
-class HealthResponse(BaseModel):
-    status: str
-    app: str
-    version: str
+class PagoResponse(PagoBase):
+    id: int
+    class Config:
+        from_attributes = True

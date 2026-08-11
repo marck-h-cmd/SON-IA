@@ -1,6 +1,5 @@
 """
-Modelos SQLAlchemy para SON-IA
-Representan las tablas definidas en la Sección 4 de la documentación
+Modelos SQLAlchemy para SON-IA (Adaptados al Dataset Real B2B)
 """
 
 from datetime import date, datetime
@@ -17,196 +16,153 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
-    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
-    """Clase base para todos los modelos"""
     pass
 
-
 # ============================================
-# BSS - Business Support System
+# CLIENTES
 # ============================================
 
 class BSSCliente(Base):
-    """
-    1. MAESTRA DE CLIENTES (BSS)
-    Almacena información comercial y perfil de confianza
-    """
     __tablename__ = "bss_clientes"
     
-    id_cliente: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
-    tipo_doc: Mapped[str] = mapped_column(String(2), nullable=False, comment="1=DNI, 6=RUC")
-    num_doc: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
-    nombre_razon_social: Mapped[str] = mapped_column(String(255), nullable=False)
-    segmento: Mapped[Optional[str]] = mapped_column(String(50))
-    email_contacto: Mapped[Optional[str]] = mapped_column(String(100))
-    telefono_contacto: Mapped[Optional[str]] = mapped_column(String(20))
-    score_confianza: Mapped[Decimal] = mapped_column(
-        Numeric(5, 2), default=0.80, comment="Perfil de confianza (0-1)"
-    )
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(String(20), primary_key=True)
+    tipo_documento: Mapped[Optional[str]] = mapped_column(String(10))
+    razon_social: Mapped[Optional[str]] = mapped_column(String(255))
+    segmento_pais: Mapped[Optional[str]] = mapped_column(String(50))
+    sunat_estado_ruc: Mapped[Optional[str]] = mapped_column(String(50))
+    sunat_estado_contribuyente: Mapped[Optional[str]] = mapped_column(String(50))
+    sunat_departamento: Mapped[Optional[str]] = mapped_column(String(100))
+    sunat_provincia: Mapped[Optional[str]] = mapped_column(String(100))
+    sunat_distrito: Mapped[Optional[str]] = mapped_column(String(100))
     
-    # Relaciones
-    cuentas: Mapped[List["BSSCuenta"]] = relationship(back_populates="cliente", lazy="selectin")
-    historial_pagos: Mapped[List["BSSHistorialPago"]] = relationship(back_populates="cliente", lazy="selectin")
+    # Virtual fields for agents compatibility
+    score_confianza: Mapped[Decimal] = mapped_column(Numeric(5, 2), default=0.80)
     
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
-    
-    def __repr__(self):
-        return f"<Cliente {self.id_cliente}: {self.nombre_razon_social}>"
-
-
-class BSSCuenta(Base):
-    """
-    2. CUENTAS DE FACTURACIÓN (BSS)
-    Configuración de facturación por cliente
-    """
-    __tablename__ = "bss_cuentas"
-    
-    id_cuenta: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
-    id_cliente: Mapped[int] = mapped_column(ForeignKey("bss_clientes.id_cliente"), nullable=False)
-    ciclo_facturacion: Mapped[int] = mapped_column(Integer, nullable=False, comment="Día del mes")
-    metodo_pago: Mapped[Optional[str]] = mapped_column(String(50))
-    estado_cuenta: Mapped[Optional[str]] = mapped_column(String(20))
-    limite_credito: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
-    dias_plazo_estandar: Mapped[int] = mapped_column(Integer, default=8)
-    
-    # Relaciones
-    cliente: Mapped["BSSCliente"] = relationship(back_populates="cuentas")
-    servicios: Mapped[List["OSSPlanta"]] = relationship(back_populates="cuenta", lazy="selectin")
-    facturas: Mapped[List["BSSFacturaCabecera"]] = relationship(back_populates="cuenta", lazy="selectin")
+    # Relationships
+    planta_fija: Mapped[List["OSSPlantaFija"]] = relationship(back_populates="cliente")
+    planta_movil: Mapped[List["OSSPlantaMovil"]] = relationship(back_populates="cliente")
+    facturas: Mapped[List["BSSFactura"]] = relationship(back_populates="cliente")
+    pagos: Mapped[List["BSSPago"]] = relationship(back_populates="cliente")
+    notas_credito: Mapped[List["BSSNotaCredito"]] = relationship(back_populates="cliente")
     
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
-
 
 # ============================================
-# OSS - Operations Support System (Planta)
+# PLANTA (SERVICIOS)
 # ============================================
 
-class OSSPlanta(Base):
-    """
-    3. MAESTRA DE PLANTA - SERVICIOS (OSS)
-    Servicios técnicos activos del cliente
-    """
-    __tablename__ = "oss_planta"
+class OSSPlantaFija(Base):
+    __tablename__ = "oss_planta_fija"
     
-    id_servicio: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
-    id_cuenta: Mapped[int] = mapped_column(ForeignKey("bss_cuentas.id_cuenta"), nullable=False)
-    tecnologia: Mapped[Optional[str]] = mapped_column(String(20))
-    identificador_recurso: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    cargo_fijo_mensual: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
-    fecha_alta: Mapped[date] = mapped_column(Date, nullable=False)
-    estado_servicio: Mapped[Optional[str]] = mapped_column(String(20))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(ForeignKey("bss_clientes.numero_identificacion_fiscal"))
+    cod_cliente: Mapped[Optional[str]] = mapped_column(String(50))
+    cod_cuenta: Mapped[Optional[str]] = mapped_column(String(50))
+    ciclo: Mapped[Optional[str]] = mapped_column(String(20))
+    fecha_alta: Mapped[Optional[date]] = mapped_column(Date)
+    status_desc: Mapped[Optional[str]] = mapped_column(String(50))
+    ln_plan_desc: Mapped[Optional[str]] = mapped_column(String(255))
+    ln_subscriber_status_desc: Mapped[Optional[str]] = mapped_column(String(50))
+    int_plan_desc: Mapped[Optional[str]] = mapped_column(String(255))
+    int_original_activation_date: Mapped[Optional[date]] = mapped_column(Date)
+    tv_plan_desc: Mapped[Optional[str]] = mapped_column(String(255))
+    tv_original_activation_date: Mapped[Optional[date]] = mapped_column(Date)
+    tv_tecnologia: Mapped[Optional[str]] = mapped_column(String(50))
+    tv_service_technology: Mapped[Optional[str]] = mapped_column(String(50))
+    tv_subscriber_status_desc: Mapped[Optional[str]] = mapped_column(String(50))
+    sub_main_offer_desc: Mapped[Optional[str]] = mapped_column(String(255))
+    int_subscriber_status_desc: Mapped[Optional[str]] = mapped_column(String(50))
+    sub_main_offer_trioduo: Mapped[Optional[str]] = mapped_column(String(100))
+    es_movistartotal: Mapped[Optional[str]] = mapped_column(String(10))
+    descuento_promocion_producto_desc: Mapped[Optional[str]] = mapped_column(String(255))
+    decos_cantidad: Mapped[Optional[str]] = mapped_column(String(20))
     
-    # Relaciones
-    cuenta: Mapped["BSSCuenta"] = relationship(back_populates="servicios")
-    detalles_factura: Mapped[List["BSSFacturaDetalle"]] = relationship(back_populates="servicio")
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+    cliente: Mapped["BSSCliente"] = relationship(back_populates="planta_fija")
 
+class OSSPlantaMovil(Base):
+    __tablename__ = "oss_planta_movil"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(ForeignKey("bss_clientes.numero_identificacion_fiscal"))
+    cod_cliente: Mapped[Optional[str]] = mapped_column(String(50))
+    cod_cuenta: Mapped[Optional[str]] = mapped_column(String(50))
+    flag_staff: Mapped[Optional[str]] = mapped_column(String(10))
+    producto: Mapped[Optional[str]] = mapped_column(String(100))
+    fecha_alta: Mapped[Optional[date]] = mapped_column(Date)
+    estado_linea: Mapped[Optional[str]] = mapped_column(String(50))
+    estado_telefono_razon: Mapped[Optional[str]] = mapped_column(String(100))
+    tipo_linea: Mapped[Optional[str]] = mapped_column(String(50))
+    product_desc: Mapped[Optional[str]] = mapped_column(String(255))
+    plan_principal: Mapped[Optional[str]] = mapped_column(String(255))
+    cant_promociones: Mapped[Optional[str]] = mapped_column(String(50))
+    prom_dscto: Mapped[Optional[str]] = mapped_column(String(255))
+    plan_roaming_datos: Mapped[Optional[str]] = mapped_column(String(255))
+    fecha_inicio_permanencia: Mapped[Optional[date]] = mapped_column(Date)
+    fecha_fin_permanencia: Mapped[Optional[date]] = mapped_column(Date)
+    meses_permanencia: Mapped[Optional[str]] = mapped_column(String(20))
+    
+    cliente: Mapped["BSSCliente"] = relationship(back_populates="planta_movil")
 
 # ============================================
-# Históricos y Transacciones
+# FACTURACIÓN Y PAGOS
 # ============================================
 
-class BSSHistorialPago(Base):
-    """
-    4. HISTÓRICO DE COMPORTAMIENTO DE PAGO
-    Registro de pagos para cálculo de score
-    """
-    __tablename__ = "bss_historial_pagos"
+class BSSFactura(Base):
+    __tablename__ = "bss_facturas"
     
-    id_historial: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    id_cliente: Mapped[int] = mapped_column(ForeignKey("bss_clientes.id_cliente"), nullable=False)
-    fecha_vencimiento: Mapped[date] = mapped_column(Date, nullable=False)
+    nro_doc_fiscal: Mapped[str] = mapped_column(String(50), primary_key=True)
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(ForeignKey("bss_clientes.numero_identificacion_fiscal"))
+    cod_cliente: Mapped[Optional[str]] = mapped_column(String(50))
+    cod_cuenta: Mapped[Optional[str]] = mapped_column(String(50))
+    fuente: Mapped[Optional[str]] = mapped_column(String(100))
+    sistema: Mapped[Optional[str]] = mapped_column(String(50))
+    fecha_emision: Mapped[Optional[date]] = mapped_column(Date)
+    fecha_vto: Mapped[Optional[date]] = mapped_column(Date)
+    moneda: Mapped[Optional[str]] = mapped_column(String(10))
+    charge_net_amount: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
+    charge_igv_invoice: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
+    charge_total_amount: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
+    
+    cliente: Mapped["BSSCliente"] = relationship(back_populates="facturas")
+
+class BSSPago(Base):
+    __tablename__ = "bss_pagos"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    factura_afectada: Mapped[str] = mapped_column(String(50), index=True)
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(ForeignKey("bss_clientes.numero_identificacion_fiscal"))
+    tipo_documento: Mapped[Optional[str]] = mapped_column(String(50))
+    cod_cliente: Mapped[Optional[str]] = mapped_column(String(50))
+    cod_cuenta: Mapped[Optional[str]] = mapped_column(String(50))
+    sistema: Mapped[Optional[str]] = mapped_column(String(50))
     fecha_pago: Mapped[Optional[date]] = mapped_column(Date)
-    dias_mora: Mapped[Optional[int]] = mapped_column(Integer)
+    moneda_factura: Mapped[Optional[str]] = mapped_column(String(10))
+    subtotal: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
+    igv: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
     monto_pagado: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
-    fue_disputado: Mapped[bool] = mapped_column(Boolean, default=False)
     
-    # Relaciones
-    cliente: Mapped["BSSCliente"] = relationship(back_populates="historial_pagos")
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    cliente: Mapped["BSSCliente"] = relationship(back_populates="pagos")
 
-
-class BSSFacturaCabecera(Base):
-    """
-    5. TRANSACCIONES DE FACTURACIÓN (CABECERA)
-    """
-    __tablename__ = "bss_factura_cabecera"
+class BSSNotaCredito(Base):
+    __tablename__ = "bss_notas_credito"
     
-    id_factura: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
-    id_cuenta: Mapped[int] = mapped_column(ForeignKey("bss_cuentas.id_cuenta"), nullable=False)
-    serie: Mapped[str] = mapped_column(String(4), nullable=False)
-    correlativo: Mapped[int] = mapped_column(Integer, nullable=False)
-    f_emision: Mapped[date] = mapped_column(Date, nullable=False)
-    f_vencimiento: Mapped[date] = mapped_column(Date, nullable=False)
-    subtotal_gravado: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
-    igv_total: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
-    importe_total: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
-    estado_pago: Mapped[Optional[str]] = mapped_column(String(20))
-    validacion_automatica: Mapped[bool] = mapped_column(Boolean, default=False)
+    nro_doc_fiscal: Mapped[str] = mapped_column(String(50), primary_key=True)
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(ForeignKey("bss_clientes.numero_identificacion_fiscal"))
+    factura_afectada: Mapped[str] = mapped_column(String(50), index=True)
+    cod_cliente: Mapped[Optional[str]] = mapped_column(String(50))
+    cod_cuenta: Mapped[Optional[str]] = mapped_column(String(50))
+    fuente: Mapped[Optional[str]] = mapped_column(String(100))
+    sistema: Mapped[Optional[str]] = mapped_column(String(50))
+    fecha_emision: Mapped[Optional[date]] = mapped_column(Date)
+    moneda: Mapped[Optional[str]] = mapped_column(String(10))
+    monto_sin_igv: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
+    subtotal: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
+    monto: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
     
-    # Relaciones
-    cuenta: Mapped["BSSCuenta"] = relationship(back_populates="facturas")
-    detalles: Mapped[List["BSSFacturaDetalle"]] = relationship(back_populates="factura", lazy="selectin")
-    ofertas: Mapped[List["BSSOfertaNegociacion"]] = relationship(back_populates="factura", lazy="selectin")
-    
-    # Constraints
-    __table_args__ = (
-        UniqueConstraint("serie", "correlativo", name="uq_serie_correlativo"),
-    )
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
-
-
-class BSSFacturaDetalle(Base):
-    """
-    6. DETALLE DE SALDOS Y REGISTRO DE VENTA
-    """
-    __tablename__ = "bss_factura_detalle"
-    
-    id_detalle: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    id_factura: Mapped[int] = mapped_column(ForeignKey("bss_factura_cabecera.id_factura"), nullable=False)
-    id_servicio: Mapped[int] = mapped_column(ForeignKey("oss_planta.id_servicio"), nullable=False)
-    concepto: Mapped[Optional[str]] = mapped_column(String(100))
-    periodo_inicio: Mapped[Optional[date]] = mapped_column(Date)
-    periodo_fin: Mapped[Optional[date]] = mapped_column(Date)
-    monto_linea: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
-    
-    # Relaciones
-    factura: Mapped["BSSFacturaCabecera"] = relationship(back_populates="detalles")
-    servicio: Mapped["OSSPlanta"] = relationship(back_populates="detalles_factura")
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-
-
-class BSSOfertaNegociacion(Base):
-    """
-    7. OFERTAS DE NEGOCIACIÓN
-    Registro de ofertas predictivas
-    """
-    __tablename__ = "bss_ofertas_negociacion"
-    
-    id_oferta: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    id_factura: Mapped[int] = mapped_column(ForeignKey("bss_factura_cabecera.id_factura"), nullable=False)
-    fecha_oferta: Mapped[Optional[date]] = mapped_column(Date)
-    descuento_ofrecido: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2))
-    nuevo_plazo_dias: Mapped[Optional[int]] = mapped_column(Integer)
-    fecha_limite_aceptacion: Mapped[Optional[date]] = mapped_column(Date)
-    estado: Mapped[Optional[str]] = mapped_column(String(20), comment="pendiente, aceptada, rechazada, expirada")
-    
-    # Relaciones
-    factura: Mapped["BSSFacturaCabecera"] = relationship(back_populates="ofertas")
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+    cliente: Mapped["BSSCliente"] = relationship(back_populates="notas_credito")
