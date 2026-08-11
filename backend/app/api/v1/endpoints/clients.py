@@ -33,7 +33,7 @@ async def listar_clientes(
 
 @router.get("/{cliente_id}")
 async def obtener_cliente(
-    cliente_id: int,
+    cliente_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -53,7 +53,7 @@ async def obtener_cliente(
 
 @router.get("/{cliente_id}/historial-facturas")
 async def historial_facturas_cliente(
-    cliente_id: int,
+    cliente_id: str,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
@@ -71,7 +71,7 @@ async def historial_facturas_cliente(
 
 @router.get("/{cliente_id}/score")
 async def obtener_score_cliente(
-    cliente_id: int,
+    cliente_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """

@@ -62,7 +62,7 @@ async def listar_facturas(
 
 @router.get("/facturas/{factura_id}")
 async def obtener_factura(
-    factura_id: int,
+    factura_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -81,7 +81,7 @@ async def obtener_factura(
 
 @router.post("/facturas/{factura_id}/validar")
 async def validar_factura(
-    factura_id: int,
+    factura_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
