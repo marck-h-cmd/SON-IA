@@ -57,4 +57,8 @@ logs/
 *.sqlite3
 
 # Docker
+<<<<<<< HEAD
 docker-compose.override.yml
+=======
+docker-compose.override.yml
+>>>>>>> b051a39 (fix: dataset eliminado de el archivo gitignore)
