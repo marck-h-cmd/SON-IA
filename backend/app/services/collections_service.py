@@ -6,9 +6,10 @@ from typing import List, Optional, Dict, Any
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from datetime import date
 import structlog
 
-from app.database.models import BSSFacturaCabecera
+from app.database.models import BSSFactura, BSSPago
 from app.core.calculation_engine import calculation_engine
 
 logger = structlog.get_logger(__name__)
@@ -27,8 +28,9 @@ class CollectionsService:
         """
         Obtiene facturas vencidas
         """
-        query = select(BSSFacturaCabecera).where(
-            BSSFacturaCabecera.estado_pago == "Vencido"
+        hoy = date.today()
+        query = select(BSSFactura).where(
+            BSSFactura.fecha_vto < hoy
         )
         
         result = await db.execute(query.offset(skip).limit(limit))
@@ -36,9 +38,9 @@ class CollectionsService:
         
         return [
             {
-                "id_factura": f.id_factura,
-                "total": float(f.importe_total) if f.importe_total else 0,
-                "estado": f.estado_pago,
+                "nro_doc_fiscal": f.nro_doc_fiscal,
+                "total": float(f.charge_total_amount) if f.charge_total_amount else 0,
+                "estado": "Vencido",
             }
             for f in facturas
         ]
@@ -46,24 +48,27 @@ class CollectionsService:
     async def calcular_tamn(
         self,
         db: AsyncSession,
-        factura_id: int,
+        factura_id: str,
     ) -> Optional[Dict[str, Any]]:
         """
         Calcula intereses TAMN para una factura
         """
         result = await db.execute(
-            select(BSSFacturaCabecera).where(BSSFacturaCabecera.id_factura == factura_id)
+            select(BSSFactura).where(BSSFactura.nro_doc_fiscal == factura_id)
         )
         factura = result.scalar_one_or_none()
         
         if not factura:
             return None
         
-        # Simulación de cálculo TAMN
-        monto = Decimal(str(factura.importe_total or 0))
+        monto = Decimal(str(factura.charge_total_amount or 0))
+        dias_mora = 0
+        if factura.fecha_vto and factura.fecha_vto < date.today():
+            dias_mora = (date.today() - factura.fecha_vto).days
+
         interes = calculation_engine.calcular_interes_tamn(
             monto_deuda=monto,
-            dias_mora=15,
+            dias_mora=dias_mora,
             factor_acumulado_vencimiento=Decimal("1.0"),
             factor_acumulado_hoy=Decimal("1.025"),
         )
@@ -78,22 +83,28 @@ class CollectionsService:
     async def procesar_pago(
         self,
         db: AsyncSession,
-        factura_id: int,
+        factura_id: str,
         monto_pagado: float,
         fecha_pago: str,
     ) -> bool:
         """
-        Procesa un pago y actualiza la factura
+        Procesa un pago insertando en BSSPago
         """
         result = await db.execute(
-            select(BSSFacturaCabecera).where(BSSFacturaCabecera.id_factura == factura_id)
+            select(BSSFactura).where(BSSFactura.nro_doc_fiscal == factura_id)
         )
         factura = result.scalar_one_or_none()
         
         if not factura:
             return False
-        
-        factura.estado_pago = "Pagado"
+            
+        pago = BSSPago(
+            factura_afectada=factura_id,
+            numero_identificacion_fiscal=factura.numero_identificacion_fiscal,
+            monto_pagado=Decimal(str(monto_pagado)),
+            moneda_factura=factura.moneda
+        )
+        db.add(pago)
         await db.commit()
         
         return True

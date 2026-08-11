@@ -28,7 +28,7 @@ async def get_facturas_vencidas(
 
 @router.post("/calcular-tamn/{factura_id}")
 async def calcular_tamn_factura(
-    factura_id: int,
+    factura_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -42,7 +42,7 @@ async def calcular_tamn_factura(
 
 @router.post("/procesar-pago")
 async def procesar_pago(
-    factura_id: int,
+    factura_id: str,
     monto_pagado: float,
     fecha_pago: str,
     db: AsyncSession = Depends(get_db),
