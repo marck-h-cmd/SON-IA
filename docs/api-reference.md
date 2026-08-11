@@ -464,42 +464,22 @@ curl "http://localhost:8000/api/v1/billing/facturas?skip=0&limit=20&estado=Pendi
   "limit": 20,
   "facturas": [
     {
-      "id_factura": 4001,
-      "id_cuenta": 2001,
-      "serie": "F001",
-      "correlativo": 1,
-      "f_emision": "2024-10-01",
-      "f_vencimiento": "2024-10-15",
-      "subtotal_gravado": 3644.07,
-      "igv_total": 655.93,
-      "importe_total": 4300.00,
-      "estado_pago": "Pendiente",
-      "validacion_automatica": true,
-      "cliente": {
-        "id_cliente": 1001,
-        "nombre": "Integratel Tech S.A.C.",
-        "segmento": "B2B"
-      },
-      "tiene_oferta": true
+      "id_factura": "S9AA-0083159839",
+      "id_cuenta": "129741406",
+      "f_emision": "2026-07-01",
+      "f_vencimiento": "2026-07-17",
+      "importe_total": 63.63,
+      "estado_pago": "Vencido",
+      "validacion_automatica": true
     },
     {
-      "id_factura": 4002,
-      "id_cuenta": 2002,
-      "serie": "F001",
-      "correlativo": 2,
-      "f_emision": "2024-10-01",
-      "f_vencimiento": "2024-10-30",
-      "subtotal_gravado": 4237.29,
-      "igv_total": 762.71,
-      "importe_total": 5000.00,
-      "estado_pago": "Pendiente",
-      "validacion_automatica": true,
-      "cliente": {
-        "id_cliente": 1002,
-        "nombre": "Corporación Financiera del Sur",
-        "segmento": "B2B"
-      },
-      "tiene_oferta": false
+      "id_factura": "S9AA-0083349818",
+      "id_cuenta": "789189737",
+      "f_emision": "2026-07-01",
+      "f_vencimiento": "2026-07-17",
+      "importe_total": 59.15,
+      "estado_pago": "Vencido",
+      "validacion_automatica": true
     }
   ]
 }
@@ -681,17 +661,16 @@ curl "http://localhost:8000/api/v1/clients/?segmento=B2B&skip=0&limit=20"
   "limit": 20,
   "clientes": [
     {
-      "id_cliente": 1001,
-      "tipo_doc": "6",
-      "num_doc": "20100000001",
-      "nombre_razon_social": "Integratel Tech S.A.C.",
-      "segmento": "B2B",
-      "email_contacto": "facturacion@integratel-tech.com",
-      "telefono_contacto": "+51999888777",
-      "score_confianza": 0.92,
-      "es_confiable": true,
-      "cuentas_activas": 1,
-      "total_facturado_ultimo_mes": 4300.00
+      "id_cliente": "2042422772",
+      "nombre": "CLIENT_00369",
+      "segmento": "SEGMENTO_002",
+      "score_confianza": 0.80
+    },
+    {
+      "id_cliente": "2006917349",
+      "nombre": "CLIENT_00708",
+      "segmento": "SEGMENTO_002",
+      "score_confianza": 0.80
     }
   ]
 }
