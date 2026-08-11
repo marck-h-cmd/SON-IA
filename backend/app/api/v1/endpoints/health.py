@@ -11,7 +11,7 @@ from app.database.connection import get_db
 router = APIRouter(tags=["Health"])
 
 
-@router.get("/health")
+@router.get("")
 async def health_check():
     """
     Health check básico para monitoreo y balanceadores de carga
@@ -23,7 +23,7 @@ async def health_check():
     }
 
 
-@router.get("/health/detailed")
+@router.get("/detailed")
 async def health_detailed(db: AsyncSession = Depends(get_db)):
     """
     Health check detallado que verifica conexión a BD
