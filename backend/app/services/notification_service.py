@@ -3,9 +3,13 @@ Servicio de Notificaciones
 """
 
 from typing import Dict, Any, Optional
+import httpx
 import structlog
 
+from app.config.settings import get_settings
+
 logger = structlog.get_logger(__name__)
+settings = get_settings()
 
 
 class NotificationService:
@@ -49,12 +53,43 @@ class NotificationService:
         """
         logger.info(f"💬 Enviando WhatsApp a {to_phone}")
         
-        # Simulación - En producción usaría Twilio
-        return {
-            "status": "sent",
-            "canal": "whatsapp",
-            "to": to_phone,
-        }
+        if settings.ENVIRONMENT == "development":
+            try:
+                # Usa OpenWA en development
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        settings.OPENWA_WEBHOOK_URL,
+                        json={
+                            "to": to_phone,
+                            "message": message
+                        },
+                        timeout=10.0
+                    )
+                    response.raise_for_status()
+                    
+                    logger.info("✅ WhatsApp enviado vía OpenWA webhook")
+                    return {
+                        "status": "sent",
+                        "canal": "whatsapp",
+                        "to": to_phone,
+                        "provider": "openwa"
+                    }
+            except Exception as e:
+                logger.error(f"❌ Error enviando WhatsApp por OpenWA: {e}")
+                return {
+                    "status": "error",
+                    "canal": "whatsapp",
+                    "to": to_phone,
+                    "error": str(e)
+                }
+        else:
+            # Simulación o producción con Twilio
+            return {
+                "status": "sent",
+                "canal": "whatsapp",
+                "to": to_phone,
+                "provider": "twilio"
+            }
     
     async def send_sms(
         self,

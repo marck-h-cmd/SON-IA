@@ -91,10 +91,14 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: str = ""
     TWILIO_PHONE_NUMBER: str = ""
     
+    # OpenWA (Development)
+    OPENWA_WEBHOOK_URL: str = "http://localhost:5000/teapi/whatsapp/webhook"
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
+        extra = "ignore"
 
 
 # Singleton

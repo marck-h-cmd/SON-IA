@@ -77,11 +77,7 @@ CLIENTES = [
 async def seed_database():
     """Sembrar datos de prueba en la base de datos"""
     
-    engine = create_async_engine(
-        settings.DATABASE_URL.replace("postgresql+asyncpg://", "sqlite+aiosqlite:///")
-        if "postgresql" in settings.DATABASE_URL
-        else settings.DATABASE_URL
-    )
+    engine = create_async_engine(settings.DATABASE_URL)
     
     async with AsyncSession(engine) as session:
         logger.info("🌱 Iniciando seed de datos SON-IA...")

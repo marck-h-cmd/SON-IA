@@ -31,10 +31,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/son_ia_db
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
     env_file:
       - ./backend/.env
     depends_on:
@@ -52,10 +50,8 @@ services:
     container_name: son-ia-celery
     command: celery -A app.tasks.celery_app worker --loglevel=info
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/son_ia_db
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
     env_file:
       - ./backend/.env
     depends_on:
@@ -67,7 +63,7 @@ services:
     restart: unless-stopped
 
   flower:
-    image: mher/flower:3.0.0
+    image: mher/flower:latest
     container_name: son-ia-flower
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/1
