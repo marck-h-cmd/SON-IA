@@ -22,7 +22,17 @@ async def get_audit_log(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene el log de auditoría de todas las acciones de los agentes.
+    Log de auditoría de todas las acciones de los agentes.
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/audit/log?skip=0&limit=100&agente=billing&accion=...
+    - Uso:  tabla de auditoría (transparencia/trazabilidad) del dashboard interno.
+    - Query params:
+      - skip:   paginación
+      - limit:  máx. registros
+      - agente: filtro por nombre de agente (supervisor, billing, ...)
+      - accion: filtro por tipo de acción
+    - Respuesta: lista de eventos registrados por el sistema (tabla de auditoría).
     
     Cada acción incluye:
     - Agente que la ejecutó
@@ -40,7 +50,12 @@ async def get_audit_detail(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene el detalle de una acción de auditoría específica.
+    Detalle de una acción de auditoría específica.
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/audit/log/{action_id}
+    - Uso:  expandir/abrir un registro del log para ver su detalle completo.
+    - Respuesta: 404 si la acción no existe.
     """
     detail = await audit_service.get_audit_detail(db, action_id)
     if not detail:

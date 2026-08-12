@@ -21,8 +21,17 @@ async def listar_clientes(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Lista clientes con filtros opcionales.
-    
+    Lista paginada de clientes (tabla bss_clientes).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/clients?skip=0&limit=100&segmento=B2B
+    - Uso:  tablas/buscadores de clientes (paginación con skip/limit).
+    - Query params:
+      - skip:     registros a saltar (paginación)
+      - limit:    máx. registros (1-500)
+      - segmento: filtro (B2B, B2C, Gobierno) - opcional
+    - Respuesta: lista de clientes con RUC, razón social, segmento, score, teléfono.
+
     Args:
         skip: Registros para saltar
         limit: Máximo de registros
@@ -37,7 +46,12 @@ async def obtener_cliente(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene información detallada de un cliente.
+    Detalle completo de un cliente (consumida por Portal / Dashboard).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/clients/{cliente_id}   (cliente_id = RUC)
+    - Uso:  perfil de cliente: datos, score de confianza, cuentas y servicios.
+    - Respuesta: 404 si no existe.
     
     Incluye:
     - Datos del cliente
@@ -59,10 +73,15 @@ async def historial_facturas_cliente(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene el historial de facturas de un cliente específico.
-    
+    Historial de facturas de un cliente (consumida por Portal de autogestión).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/clients/{cliente_id}/historial-facturas?skip=0&limit=50
+    - Uso:  tabla de recibos históricos del cliente en su portal.
+    - Respuesta: lista de facturas del cliente (bss_facturas).
+
     Args:
-        cliente_id: ID del cliente
+        cliente_id: ID del cliente (RUC)
         skip: Registros para saltar
         limit: Máximo de registros
     """
@@ -75,7 +94,12 @@ async def obtener_score_cliente(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene el score de confianza detallado del cliente.
+    Score de confianza de un cliente (usado por los agentes IA).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/clients/{cliente_id}/score
+    - Uso:  mostrar score y su desglose (elemento "score_confianza", 0-1).
+    - Respuesta: 404 si el cliente no existe.
     
     Incluye:
     - Score actual

@@ -93,6 +93,17 @@ class Settings(BaseSettings):
     
     # OpenWA (Development)
     OPENWA_WEBHOOK_URL: str = "http://localhost:5000/teapi/whatsapp/webhook"
+
+    # Open Gateway (Movistar / Telefónica)
+    OPEN_GATEWAY_CLIENT_ID: str = ""
+    OPEN_GATEWAY_CLIENT_SECRET: str = ""
+    OPEN_GATEWAY_TOKEN_URL: str = "https://sandbox.opengateway.telefonica.com/apigateway/token"
+    OPEN_GATEWAY_BASE_URL: str = "https://sandbox.opengateway.telefonica.com"
+
+    # OpenWA (Gateway WhatsApp)
+    OPENWA_API_KEY: str = ""
+    OPENWA_BASE_URL: str = "http://localhost:2785"
+    OPENWA_SESSION_NAME: str = "mi-session"
     
     class Config:
         env_file = ".env"

@@ -20,14 +20,22 @@ async def get_dashboard_metrics(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene métricas en tiempo real para el dashboard.
-    
+    Métricas del Dashboard Interno (consumida por la home del frontend).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/dashboard/metrics  (vía proxy: /api/proxy/dashboard/metrics)
+    - Uso:  tarjetas superiores del dashboard (recaudación, facturas, morosidad, HITL).
+    - Respuesta: { status, metrics: { facturas_procesadas_hoy, monto_total_recaudado,
+        indice_morosidad, ofertas_activas, facturas_pendientes_revision,
+        tasa_aceptacion_ofertas, tiempo_promedio_emision_seg, agentes_activos, timestamp } }
+    - Nota:  por ahora son métricas simuladas (seed), no provienen de la BD real.
+
     Retorna:
     - Total de facturas procesadas hoy
     - Monto total recaudado
     - Índice de morosidad
     - Ofertas de negociación activas
-    - Facturas pendientes de revisión humana
+    - Facturas pendientes de revisión humana (HITL)
     """
     # Simulación de métricas - En producción consultaría BD
     metrics = {
@@ -51,12 +59,26 @@ async def get_dashboard_metrics(
 @router.get("/agentes/estado")
 async def get_estado_agentes():
     """
-    Obtiene el estado actual de todos los agentes del ecosistema.
-    
-    Retorna:
-    - Estado de cada agente (activo, inactivo, error)
-    - Última ejecución
-    - Total de tareas procesadas
+    Estado del enjambre de agentes IA (consumida por la home del frontend).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/dashboard/agentes/estado  (vía proxy: /api/proxy/dashboard/agentes/estado)
+    - Uso:  sección "Enjambre de Agentes" del dashboard.
+    - Respuesta: { status, system_health, agentes: {
+          <agente>: { estado, modelo, proveedor, ultima_ejecucion,
+                      tareas_procesadas, tasa_error } } }
+      Campos por agente:
+      - estado:            "activo" | "idle" | "error"
+      - modelo:            modelo de LLM usado (ej: Llama-3.3, gemini-1.5-pro)
+      - proveedor:         proveedor del modelo (groq | google | groq+google)
+      - ultima_ejecucion:  timestamp ISO (fecha ficticia del seed)
+      - tareas_procesadas: contador acumulado
+      - tasa_error:        porcentaje de error en decimal (0.012 = 1.2%)
+    - Nota:  el frontend multiplica tasa_error*100 para mostrarlo como %.
+
+    Obtiene el estado actual de todos los agentes del ecosistema:
+    Supervisor, Facturación, Cobranzas, Negociación, Customer Success,
+    Clasificador y Aprendizaje.
     """
     from app.agents.supervisor_agent import supervisor_agent
     
@@ -66,44 +88,58 @@ async def get_estado_agentes():
         "supervisor": {
             "estado": "activo",
             "modelo": "Llama-3.3",
+            "proveedor": "groq",
             "ultima_ejecucion": "2024-10-01T09:55:00",
             "tareas_procesadas": 1250,
+            "tasa_error": 0.012,
         },
         "billing": {
             "estado": "activo",
             "modelo": "Llama-3.3",
+            "proveedor": "groq",
             "ultima_ejecucion": "2024-10-01T09:50:00",
             "tareas_procesadas": 450,
+            "tasa_error": 0.008,
         },
         "collections": {
             "estado": "activo",
             "modelo": "Llama-3.3",
+            "proveedor": "groq",
             "ultima_ejecucion": "2024-10-01T09:45:00",
             "tareas_procesadas": 320,
+            "tasa_error": 0.015,
         },
         "negotiation": {
             "estado": "activo",
             "modelo": "Llama-3.3",
+            "proveedor": "groq",
             "ultima_ejecucion": "2024-10-01T09:40:00",
             "tareas_procesadas": 180,
+            "tasa_error": 0.021,
         },
         "customer": {
             "estado": "activo",
             "modelo": "gemini-1.5-pro",
+            "proveedor": "google",
             "ultima_ejecucion": "2024-10-01T09:58:00",
             "tareas_procesadas": 890,
+            "tasa_error": 0.006,
         },
         "classifier": {
             "estado": "activo",
             "modelo": "gemini-1.5-flash",
+            "proveedor": "google",
             "ultima_ejecucion": "2024-10-01T09:59:00",
             "tareas_procesadas": 2100,
+            "tasa_error": 0.004,
         },
         "learning": {
             "estado": "idle",
             "modelo": "Llama-3.3 + gemini",
+            "proveedor": "groq+google",
             "ultima_ejecucion": "2024-09-30T23:00:00",
             "tareas_procesadas": 30,
+            "tasa_error": 0.0,
         },
     }
     
@@ -119,12 +155,23 @@ async def get_alertas_excepcion(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene alertas de excepción que requieren intervención humana.
-    
-    Retorna:
-    - Facturas con anomalías
-    - Clientes con cambios significativos en score
-    - Errores de sistema
+    Alertas de excepción para revisión humana (HITL) (consumida por la home).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/dashboard/alertas  (vía proxy: /api/proxy/dashboard/alertas)
+    - Uso:  sección "Alertas Críticas" del dashboard.
+    - Respuesta: { status, total_alertas, alertas: [ {
+          id, tipo, severidad, mensaje, cliente|cliente_id, factura_id,
+          fecha, estado, accion_sugerida } ] }
+      Campos por alerta:
+      - id:               identificador numérico
+      - tipo:             categoria (anomalia_factura, cambio_score, ...)
+      - severidad:        "alta" | "media" | "baja"
+      - mensaje:          texto legible de la alerta
+      - fecha:            timestamp ISO (para formatear fecha/hora en UI)
+      - estado:           "pendiente_revision", ...
+      - accion_sugerida:  qué debe hacer el operador humano
+    - Nota:  por ahora son alertas de ejemplo (seed), no consultan la BD.
     """
     alertas = [
         {
@@ -136,6 +183,7 @@ async def get_alertas_excepcion(
             "cliente": "María García Romero",
             "fecha": "2024-10-01T09:30:00",
             "estado": "pendiente_revision",
+            "accion_sugerida": "Revisar factura y validar cargos con el cliente",
         },
         {
             "id": 2,
@@ -145,6 +193,7 @@ async def get_alertas_excepcion(
             "cliente_id": 1005,
             "fecha": "2024-10-01T08:15:00",
             "estado": "pendiente_revision",
+            "accion_sugerida": "Contactar al cliente para verificar satisfacción",
         },
     ]
     

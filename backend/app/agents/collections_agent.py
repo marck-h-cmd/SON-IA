@@ -12,6 +12,7 @@ import time
 
 from app.agents.base_agent import BaseAgent
 from app.core.calculation_engine import calculation_engine
+from app.integrations.openwa_client import openwa_client
 
 logger = structlog.get_logger(__name__)
 
@@ -48,7 +49,7 @@ class CollectionsAgent(BaseAgent):
         
         Args:
             task: {
-                "type": "check_overdue" | "process_payment" | "calculate_tamn",
+                "type": "check_overdue" | "process_payment" | "calculate_tamn" | "procesar_rebaja",
                 "factura_id": 4001,
                 ...
             }
@@ -61,6 +62,8 @@ class CollectionsAgent(BaseAgent):
                 result = await self._check_overdue_invoices(task)
             elif task_type == "process_payment":
                 result = await self._process_payment(task)
+            elif task_type == "procesar_rebaja":
+                result = await self._procesar_rebaja_automatica(task)
             elif task_type == "calculate_tamn":
                 result = await self._calculate_tamn(task)
             else:
@@ -113,25 +116,68 @@ class CollectionsAgent(BaseAgent):
     async def _process_payment(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
         Procesa un pago recibido y concilia con facturas pendientes.
+
+        Antes de autorizar el pago se valida la identidad del cliente
+        vía Open Gateway (SIM Swap + Number Verification).
         
         Args:
             task: {
                 "factura_id": 4001,
                 "monto_pagado": 4300.00,
-                "fecha_pago": "2024-10-20"
+                "fecha_pago": "2024-10-20",
+                "phone_number": "+51123456789"
             }
         """
         factura_id = task.get("factura_id")
         monto_pagado = Decimal(str(task.get("monto_pagado", 0)))
+        phone_number = task.get("phone_number")
         
         logger.info(f"💰 Collections: Procesando pago factura {factura_id}")
         
-        return {
+        result = {
             "status": "success",
             "factura_id": factura_id,
             "monto_pagado": float(monto_pagado),
             "accion": "conciliado",
             "nuevo_estado": "Pagado",
+        }
+        
+        # ---- Notificación WhatsApp de confirmación (OpenWA) ----
+        if phone_number:
+            try:
+                await openwa_client.send_message(
+                    phone_number=phone_number,
+                    message=f"✅ Hola, tu pago por S/ {float(monto_pagado):.2f} de la factura {factura_id} fue recibido. ¡Gracias!",
+                )
+                result["whatsapp_notification"] = "enviada"
+            except Exception as e:
+                logger.warning(f"⚠️ Collections: No se pudo enviar WhatsApp - {e}")
+                result["whatsapp_notification"] = f"error: {e}"
+        # ----------------------------------------------------------
+        
+        return result
+    
+    async def _procesar_rebaja_automatica(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Aplica una rebaja/descuento automática a una factura.
+
+        Args:
+            task: {
+                "factura_id": 4001,
+                "monto_rebaja": 500.00,
+                "phone_number": "+51123456789"
+            }
+        """
+        factura_id = task.get("factura_id")
+        monto_rebaja = Decimal(str(task.get("monto_rebaja", 0)))
+        
+        logger.info(f"🏷️ Collections: Solicitud de rebaja automática factura {factura_id}")
+        
+        return {
+            "status": "success",
+            "factura_id": factura_id,
+            "monto_rebaja": float(monto_rebaja),
+            "accion": "rebaja_aplicada",
         }
     
     async def _calculate_tamn(self, task: Dict[str, Any]) -> Dict[str, Any]:

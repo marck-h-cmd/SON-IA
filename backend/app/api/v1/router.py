@@ -12,6 +12,8 @@ from app.api.v1.endpoints import (
     collections,
     negotiations,
     audit,
+    validate_identity,
+    whatsapp,
 )
 
 api_v1_router = APIRouter()
@@ -24,3 +26,5 @@ api_v1_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashb
 api_v1_router.include_router(collections.router, prefix="/collections", tags=["Collections"])
 api_v1_router.include_router(negotiations.router, prefix="/negotiations", tags=["Negotiations"])
 api_v1_router.include_router(audit.router, prefix="/audit", tags=["Audit"])
+api_v1_router.include_router(validate_identity.router, prefix="/validate-identity", tags=["Identity"])
+api_v1_router.include_router(whatsapp.router, prefix="/whatsapp", tags=["WhatsApp"])

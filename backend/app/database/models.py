@@ -43,6 +43,9 @@ class BSSCliente(Base):
     
     # Virtual fields for agents compatibility
     score_confianza: Mapped[Decimal] = mapped_column(Numeric(5, 2), default=0.80)
+
+    # Teléfono de contacto (WhatsApp) - usado por la integración con OpenWA
+    numero_celular: Mapped[Optional[str]] = mapped_column(String(20))
     
     # Relationships
     planta_fija: Mapped[List["OSSPlantaFija"]] = relationship(back_populates="cliente")

@@ -20,13 +20,20 @@ async def ejecutar_ciclo_facturacion(
     force_review: bool = Query(False, description="Forzar revisión humana"),
 ):
     """
-    Inicia un ciclo de facturación.
-    
+    Dispara un ciclo de facturación completo (acción del Agente Supervisor).
+
+    PARA EL FRONTEND:
+    - URL:    POST /api/v1/billing/ciclos/ejecutar?ciclo_id=N&force_review=true|false
+    - Uso:    botón "Ejecutar ciclo" de la sección Facturación.
+    - Cuerpo: no requiere body; usa query params (ciclo_id, force_review).
+    - Respuesta: resultado del Supervisor Agent con el estado del flujo
+      (facturas generadas, validación, anomalías detectadas).
+
     El Agente Supervisor orquesta el proceso completo:
-    1. Validación de datos
-    2. Cálculo de facturas
-    3. Verificación de anomalías
-    4. Decisión HITL si es necesario
+    1. Validación de datos de insumos (plantas BSS/OSS)
+    2. Cálculo de facturas vía motor simbólico (PxQ e IGV)
+    3. Verificación de anomalías (monto 500% superior, etc.)
+    4. Decisión HITL si es necesario (envía alerta al dashboard)
     """
     task = {
         "type": "start_billing_cycle",
@@ -50,8 +57,17 @@ async def listar_facturas(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Lista facturas con filtros opcionales.
-    
+    Lista paginada de facturas (consumida por la sección Facturación).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/billing/facturas?skip=0&limit=100&estado=Pendiente
+    - Uso:  tablas de facturas (paginar con skip/limit).
+    - Query params:
+      - skip:   registros a saltar (paginación offset)
+      - limit:  máx. registros a retornar (1-500)
+      - estado: filtro booleano de color (Pendiente, Pagado, Vencido) - opcional
+    - Respuesta: lista de facturas de la tabla bss_facturas.
+
     Args:
         skip: Registros para saltar (paginación)
         limit: Máximo de registros a retornar
@@ -66,7 +82,13 @@ async def obtener_factura(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Obtiene el detalle completo de una factura.
+    Detalle completo de una factura (consumida por Facturación / Portal).
+
+    PARA EL FRONTEND:
+    - URL:  GET /api/v1/billing/facturas/{factura_id}
+    - Uso:  vista de detalle de factura (cabecera + detalle + ofertas activas).
+    - Path param: factura_id (ej: S9AA-0082761955).
+    - Respuesta: 404 si no existe; si no, cabecera, líneas y ofertas.
     
     Incluye:
     - Cabecera de factura
@@ -85,7 +107,14 @@ async def validar_factura(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Valida manualmente una factura que requiere revisión humana.
+    Validación manual (HITL) de una factura marcada como excepcion.
+
+    PARA EL FRONTEND:
+    - URL:  POST /api/v1/billing/facturas/{factura_id}/validar
+    - Uso:  botón "Validar" / "Aprobar" en el flujo de revisión humana
+            (dashboard -> facturas_pendientes_revision).
+    - Efecto: marca la factura como revisada por un operador y continúa el flujo.
+
     Solo aplica a facturas con validacion_automatica=False.
     """
     result = await billing_service.validar_factura_manual(db, factura_id)
