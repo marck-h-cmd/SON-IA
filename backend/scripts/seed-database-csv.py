@@ -6,6 +6,7 @@ from decimal import Decimal
 from datetime import datetime
 
 import pandas as pd
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
@@ -47,7 +48,10 @@ def clean_decimal(val):
 
 async def seed_data():
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        # Reset the development database schema. CASCADE removes foreign-key
+        # dependencies before recreating all tables from SQLAlchemy metadata.
+        await conn.execute(text("DROP SCHEMA public CASCADE"))
+        await conn.execute(text("CREATE SCHEMA public"))
         await conn.run_sync(Base.metadata.create_all)
 
     print("Tables recreated successfully.")
@@ -218,3 +222,4 @@ async def seed_data():
 
 if __name__ == "__main__":
     asyncio.run(seed_data())
+    
