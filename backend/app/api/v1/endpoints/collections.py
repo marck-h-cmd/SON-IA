@@ -22,19 +22,18 @@ async def get_facturas_vencidas(
 ):
     """
     Cartera de facturas vencidas (consumida por la sección Cobranzas).
-
-    PARA EL FRONTEND:
-    - URL:  GET /api/v1/collections/facturas-vencidas?skip=0&limit=100&etapa=media
-    - Uso:  tabla de morosidad/cartera vencida (PCD).
-    - Query params:
-      - skip:  paginación offset
-      - limit: máx. registros
-      - etapa: filtro de severidad de mora: temprana, media, tardia, critica
-    - Respuesta: lista de facturas vencidas con su etapa de mora (Agente Cobranzas).
-
-    Lista facturas vencidas con su etapa de mora.
     """
     return await collections_service.get_facturas_vencidas(db, skip, limit, etapa)
+
+
+@router.get("/cartera-metricas")
+async def get_cartera_metricas(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Resumen consolidado de métricas de cartera vencida y TAMN acumulado.
+    """
+    return await collections_service.get_cartera_metricas(db)
 
 
 @router.post("/calcular-tamn/{factura_id}")
