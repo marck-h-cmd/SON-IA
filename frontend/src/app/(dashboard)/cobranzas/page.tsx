@@ -71,8 +71,8 @@ export default function CollectionsPage() {
     }
   };
 
-  const handleRegistrarPago = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegistrarPago = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!selectedFactura) return;
 
     try {

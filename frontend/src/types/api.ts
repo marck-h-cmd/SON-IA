@@ -32,6 +32,7 @@ export interface AgentesEstado {
   customer: AgentState;
   classifier: AgentState;
   learning: AgentState;
+  [key: string]: AgentState;
 }
 
 // ============ BILLING TYPES ============

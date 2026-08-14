@@ -149,7 +149,7 @@ export default function BillingPage() {
               key: 'estado',
               render: (val) => (
                 <Badge variant={val === 'Pagado' ? 'success' : val === 'Vencido' ? 'danger' : 'warning'}>
-                  {val}
+                  {String(val)}
                 </Badge>
               ),
             },
