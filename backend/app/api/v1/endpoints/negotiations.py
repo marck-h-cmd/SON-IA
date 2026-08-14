@@ -21,40 +21,42 @@ async def listar_ofertas(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Lista de ofertas de negociación predictiva (tabla bss_ofertas_negociacion).
-
-    PARA EL FRONTEND:
-    - URL:  GET /api/v1/negotiations/ofertas?skip=0&limit=50&estado=pendiente
-    - Uso:  panel de ofertas/negociaciones del dashboard interno y del portal
-            de autogestión del cliente.
-    - Query params:
-      - skip:   paginación
-      - limit:  máx. registros
-      - estado: filtro: pendiente, aceptada, rechazada, expirada
-    - Respuesta: lista de ofertas (descuento, plazo, cliente, estado).
-
-    Lista ofertas de negociación con filtros.
+    Lista de ofertas de negociación predictiva.
     """
     return await billing_service.get_ofertas(db, skip, limit, estado)
 
 
-@router.post("/ofertas/{oferta_id}/aceptar")
-async def aceptar_oferta(
-    oferta_id: int,
+@router.get("/tasa-aceptacion")
+async def get_tasa_aceptacion(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Cliente acepta una oferta de negociación (Portal / Dashboard).
+    Tasa de aceptación y métricas de ofertas de negociación.
+    """
+    return await billing_service.get_tasa_aceptacion(db)
 
-    PARA EL FRONTEND:
-    - URL:  POST /api/v1/negotiations/ofertas/{oferta_id}/aceptar
-    - Uso:  botones "Aceptar oferta" del portal de autogestión.
-    - Respuesta: 404 si la oferta no existe.
 
-    Acciones:
-    1. Genera nota de crédito
-    2. Actualiza fecha de pago
-    3. Notifica al cliente (correo/WhatsApp según su canal)
+@router.get("/ofertas/{oferta_id}")
+async def get_oferta(
+    oferta_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Detalle completo de una oferta de negociación.
+    """
+    oferta = await billing_service.get_oferta_detalle(db, oferta_id)
+    if not oferta:
+        raise HTTPException(status_code=404, detail="Oferta no encontrada")
+    return oferta
+
+
+@router.post("/ofertas/{oferta_id}/aceptar")
+async def aceptar_oferta(
+    oferta_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Cliente o agente acepta una oferta de negociación.
     """
     result = await billing_service.aceptar_oferta(db, oferta_id)
     if not result:
@@ -64,18 +66,14 @@ async def aceptar_oferta(
 
 @router.post("/ofertas/{oferta_id}/rechazar")
 async def rechazar_oferta(
-    oferta_id: int,
+    oferta_id: str,
+    razon: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Cliente rechaza una oferta de negociación (Portal).
-
-    PARA EL FRONTEND:
-    - URL:  POST /api/v1/negotiations/ofertas/{oferta_id}/rechazar
-    - Uso:  botón "Rechazar oferta" del portal.
-    - Respuesta: 404 si la oferta no existe.
+    Cliente o agente rechaza una oferta de negociación.
     """
-    result = await billing_service.rechazar_oferta(db, oferta_id)
+    result = await billing_service.rechazar_oferta(db, oferta_id, razon)
     if not result:
         raise HTTPException(status_code=404, detail="Oferta no encontrada")
     return {"status": "success", "message": "Oferta rechazada"}

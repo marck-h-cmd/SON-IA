@@ -57,6 +57,7 @@ async def get_dashboard_metrics(
 
 
 @router.get("/agentes/estado")
+@router.get("/agentes-estado")
 async def get_estado_agentes():
     """
     Estado del enjambre de agentes IA (consumida por la home del frontend).

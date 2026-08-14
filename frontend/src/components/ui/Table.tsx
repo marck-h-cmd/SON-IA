@@ -30,9 +30,9 @@ export const Table = React.forwardRef<HTMLTableElement, TableProps<any>>(
         <table ref={ref} className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-              {columns.map((col) => (
+              {columns.map((col, colIndex) => (
                 <th
-                  key={String(col.key)}
+                  key={`${String(col.key)}-${colIndex}`}
                   className={`px-6 py-3 font-semibold text-gray-900 dark:text-white ${alignClasses[col.align || 'left']}`}
                   style={{ width: col.width }}
                 >
@@ -61,9 +61,9 @@ export const Table = React.forwardRef<HTMLTableElement, TableProps<any>>(
                   onClick={() => onRowClick?.(row)}
                   className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 >
-                  {columns.map((col) => (
+                  {columns.map((col, colIndex) => (
                     <td
-                      key={String(col.key)}
+                      key={`${String(col.key)}-${colIndex}`}
                       className={`px-6 py-4 text-gray-900 dark:text-gray-200 ${alignClasses[col.align || 'left']}`}
                     >
                       {col.render ? col.render(row[col.key], row) : String(row[col.key])}
