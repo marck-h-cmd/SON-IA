@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: son_ia_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -91,7 +91,7 @@ services:
       dockerfile: Dockerfile
     container_name: son-ia-frontend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     env_file:
       - ./frontend/.env.local
     depends_on:
@@ -99,6 +99,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/.next
     restart: unless-stopped
 
 volumes:
