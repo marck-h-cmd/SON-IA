@@ -294,6 +294,27 @@ class WhatsAppWebhookService:
         if not body or not phone:
             return {"status": "ignored", "reason": "sin_texto_o_numero", "success": True}
 
+        # 🛡️ PROTECCIÓN DEMO: Si está configurado WHATSAPP_DEMO_ALLOWED_PHONE,
+        # solo responder automáticamente a este número para no responder a chats personales.
+        allowed_demo = settings.WHATSAPP_DEMO_ALLOWED_PHONE.strip()
+        if allowed_demo:
+            allowed_list = [normalize_phone(n.strip()) for n in allowed_demo.split(",") if n.strip()]
+            sender_normalized = normalize_phone(phone)
+            if sender_normalized not in allowed_list:
+                logger.info(
+                    "🛡️ [Demo Sandbox] Mensaje entrante ignorado para proteger chats personales",
+                    remitente=phone,
+                    remitente_normalizado=sender_normalized,
+                    numeros_autorizados=allowed_list,
+                )
+                return {
+                    "status": "ignored",
+                    "reason": "demo_protection_active",
+                    "mensaje": "Mensaje recibido pero ignorado por filtro de seguridad de Demo",
+                    "remitente": phone,
+                    "success": True,
+                }
+
         cliente = await self._find_client(db, phone)
         intent = await self._interpret(body)
         reply = await self._build_reply(db, cliente, intent, body)

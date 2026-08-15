@@ -109,6 +109,9 @@ class Settings(BaseSettings):
     OPENWA_BASE_URL: str = "http://localhost:2785"
     OPENWA_SESSION_NAME: str = "mi-session"
     
+    # WhatsApp Whitelist para Demo (Si se define, SOLO responde a este número para no responder chats personales)
+    WHATSAPP_DEMO_ALLOWED_PHONE: str = ""
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
