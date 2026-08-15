@@ -11,6 +11,7 @@ import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import Skeleton from '@/components/ui/Skeleton';
 import { collectionsService } from '@/services/collectionsService';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/formatting';
+import { exportToCsv } from '@/utils/exportToExcel';
 import { getMoraStatusColor } from '@/utils/colors';
 import type { FacturaVencida, CarteraMetricas, TAMNCalculo, ListPaginada } from '@/types/api';
 
@@ -173,7 +174,26 @@ export default function CollectionsPage() {
       {/* Filters */}
       <Card>
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Filtros</h2>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold">Filtros</h2>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                exportToCsv('Cartera_Vencida_Cobranzas', facturas, [
+                  { header: 'Factura', key: 'numero_factura' },
+                  { header: 'Cliente', key: 'cliente_nombre' },
+                  { header: 'Monto Original', key: 'monto_original' },
+                  { header: 'Monto Pendiente', key: 'monto_pendiente' },
+                  { header: 'Días Vencido', key: 'dias_vencido' },
+                  { header: 'Etapa Mora', key: 'etapa_mora' },
+                  { header: 'Fecha Vencimiento', key: 'fecha_vencimiento' },
+                  { header: 'TAMN Calculado', key: 'tamn_calculado' },
+                ])
+              }
+            >
+              📊 Exportar a Excel
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Etapa de Mora</label>

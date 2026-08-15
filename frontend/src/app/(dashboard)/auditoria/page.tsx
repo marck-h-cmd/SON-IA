@@ -123,8 +123,9 @@ export default function AuditPage() {
           <p className="text-sm font-semibold">Últimos 90 días</p>
         </Card>
         <Card>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Acción Rápida</p>
           <Button variant="primary" size="sm" onClick={handleExportLogs} className="w-full">
-            📥 Descargar CSV
+            📊 Exportar a Excel
           </Button>
         </Card>
       </div>
