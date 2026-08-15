@@ -44,10 +44,14 @@ def normalize_phone(phone: str | int) -> str:
 
 def to_chat_id(phone: str | int) -> str:
     """
-    Convierte un número local al WID de WhatsApp: <pais><numero>@c.us.
+    Convierte un número local o group ID al WID de WhatsApp: <pais><numero>@c.us o <id>@g.us.
     Ej: "901528082" -> "51901528082@c.us"
+    Ej: "120363024823948293@g.us" -> "120363024823948293@g.us"
     """
-    digits = normalize_phone(phone)
+    s = str(phone).strip()
+    if "@g.us" in s or "@c.us" in s:
+        return s
+    digits = normalize_phone(s)
     if not digits.startswith(DEFAULT_COUNTRY_CODE):
         digits = DEFAULT_COUNTRY_CODE + digits
     return f"{digits}@c.us"

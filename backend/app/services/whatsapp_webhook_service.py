@@ -34,8 +34,10 @@ logger = structlog.get_logger(__name__)
 class WhatsAppWebhookService:
     """Procesa mensajes entrantes de WhatsApp y responde automáticamente con datos y RAG."""
 
-    def _parse_message(self, payload: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], bool]:
-        """Extrae (mensaje, teléfono_emisor, from_me) de un payload de OpenWA."""
+    def _parse_message(self, payload: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], Optional[str], bool, bool]:
+        """
+        Extrae (mensaje, teléfono_autor, target_chat_id, es_grupo, from_me) de un payload de OpenWA.
+        """
         data = payload.get("data") or payload.get("message") or payload
 
         body = (
@@ -60,14 +62,37 @@ class WhatsAppWebhookService:
             or data.get("from_me")
         )
 
+        chat_id_str = str(from_wid) if from_wid else ""
+        is_group = "@g.us" in chat_id_str or bool(data.get("isGroupMsg") or data.get("isGroup"))
+
+        # Determinar el autor del mensaje (si es grupo, buscar quién escribió)
+        author_wid = (
+            data.get("author")
+            or data.get("participant")
+            or ((data.get("key") or {}).get("participant"))
+            or from_wid
+        )
+
         phone = None
-        if from_wid:
+        if author_wid:
+            wid = str(author_wid).split("@")[0]
+            phone = normalize_phone(wid)
+        elif from_wid:
             wid = str(from_wid).split("@")[0]
             phone = normalize_phone(wid)
 
-        logger.info("📥 WhatsApp: mensaje entrante",
-                    phone=phone, body=body[:80], from_me=from_me, event_type=payload.get("event"))
-        return body, phone, from_me
+        target_chat = chat_id_str if is_group else (phone or "")
+
+        logger.info(
+            "📥 WhatsApp: mensaje entrante",
+            phone=phone,
+            chat_id=chat_id_str,
+            is_group=is_group,
+            body=body[:80],
+            from_me=from_me,
+            event_type=payload.get("event")
+        )
+        return body, phone, target_chat, is_group, from_me
 
     async def _find_client(self, db: AsyncSession, phone: str) -> Optional[BSSCliente]:
         """Busca al cliente por su número de celular (columna numero_celular)."""
@@ -286,53 +311,65 @@ class WhatsAppWebhookService:
 
     async def process_payload(self, payload: Dict[str, Any], db: AsyncSession) -> Dict[str, Any]:
         """Procesa un payload entrante de WhatsApp y despacha la respuesta."""
-        body, phone, from_me = self._parse_message(payload)
+        body, phone, target_chat, is_group, from_me = self._parse_message(payload)
 
         if from_me:
             logger.info("↩️ Mensaje saliente ignorado")
             return {"status": "ignored", "reason": "from_me", "success": True}
-        if not body or not phone:
-            return {"status": "ignored", "reason": "sin_texto_o_numero", "success": True}
+        if not body or not target_chat:
+            return {"status": "ignored", "reason": "sin_texto_o_destino", "success": True}
 
         # 🛡️ PROTECCIÓN DEMO: Si está configurado WHATSAPP_DEMO_ALLOWED_PHONE,
-        # solo responder automáticamente a este número para no responder a chats personales.
+        # puede ser un número de celular (ej: 904388543) o un ID de grupo (ej: 120363024823948293@g.us o 120363024823948293)
         allowed_demo = settings.WHATSAPP_DEMO_ALLOWED_PHONE.strip()
         if allowed_demo:
-            allowed_list = [normalize_phone(n.strip()) for n in allowed_demo.split(",") if n.strip()]
-            sender_normalized = normalize_phone(phone)
-            if sender_normalized not in allowed_list:
+            allowed_items = [n.strip() for n in allowed_demo.split(",") if n.strip()]
+            allowed_normalized_phones = [normalize_phone(n) for n in allowed_items if "@g.us" not in n]
+            allowed_groups = [n.lower() for n in allowed_items if "@g.us" in n or len(n) > 15]
+
+            sender_normalized = normalize_phone(phone) if phone else ""
+            target_chat_lower = target_chat.lower()
+
+            matches_phone = bool(sender_normalized and sender_normalized in allowed_normalized_phones)
+            matches_group = any(g in target_chat_lower for g in allowed_groups)
+
+            if not (matches_phone or matches_group):
                 logger.info(
-                    "🛡️ [Demo Sandbox] Mensaje entrante ignorado para proteger chats personales",
+                    "🛡️ [Demo Sandbox] Mensaje ignorado para proteger chats/grupos personales",
                     remitente=phone,
-                    remitente_normalizado=sender_normalized,
-                    numeros_autorizados=allowed_list,
+                    target_chat=target_chat,
+                    is_group=is_group,
+                    autorizados=allowed_items,
                 )
                 return {
                     "status": "ignored",
                     "reason": "demo_protection_active",
                     "mensaje": "Mensaje recibido pero ignorado por filtro de seguridad de Demo",
                     "remitente": phone,
+                    "target_chat": target_chat,
                     "success": True,
                 }
 
-        cliente = await self._find_client(db, phone)
+        cliente = await self._find_client(db, phone) if phone else None
         intent = await self._interpret(body)
         reply = await self._build_reply(db, cliente, intent, body)
 
         session = payload.get("sessionId") or None
         send_result = await openwa_client.send_message(
-            phone_number=phone,
+            phone_number=target_chat,
             message=reply,
             session_name=session,
         )
 
         if not send_result.get("success"):
-            logger.error("❌ Falló envío de respuesta WhatsApp", phone=phone, error=send_result.get("error"))
+            logger.error("❌ Falló envío de respuesta WhatsApp", target_chat=target_chat, error=send_result.get("error"))
 
         return {
             "status": "processed",
             "success": True,
             "phone": phone,
+            "target_chat": target_chat,
+            "is_group": is_group,
             "intent": intent["intent"],
             "client_found": cliente is not None,
             "reply": reply,
