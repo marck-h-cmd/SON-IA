@@ -6,7 +6,7 @@ Lógica de negocio para facturación y clientes
 from typing import List, Optional, Dict, Any
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from datetime import date
 import structlog
 
@@ -148,17 +148,29 @@ class BillingService:
         skip: int = 0,
         limit: int = 100,
         segmento: Optional[str] = None,
+        search: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Obtiene lista paginada de clientes"""
+        """Obtiene lista paginada de clientes con búsqueda por RUC, Razón Social o Teléfono"""
         count_query = select(func.count(BSSCliente.numero_identificacion_fiscal))
+        query = select(BSSCliente)
+
         if segmento:
             count_query = count_query.where(BSSCliente.segmento_pais == segmento)
+            query = query.where(BSSCliente.segmento_pais == segmento)
+
+        if search and search.strip():
+            pattern = f"%{search.strip()}%"
+            search_cond = or_(
+                BSSCliente.numero_identificacion_fiscal.ilike(pattern),
+                BSSCliente.razon_social.ilike(pattern),
+                BSSCliente.numero_celular.ilike(pattern),
+            )
+            count_query = count_query.where(search_cond)
+            query = query.where(search_cond)
+
         total_res = await db.execute(count_query)
         total_count = total_res.scalar() or 0
 
-        query = select(BSSCliente)
-        if segmento:
-            query = query.where(BSSCliente.segmento_pais == segmento)
         query = query.offset(skip).limit(limit)
         
         result = await db.execute(query)

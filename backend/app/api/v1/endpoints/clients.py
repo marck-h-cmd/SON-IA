@@ -18,26 +18,29 @@ async def listar_clientes(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     segmento: Optional[str] = None,
+    search: Optional[str] = Query(None, description="Búsqueda por RUC, razón social o teléfono"),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Lista paginada de clientes (tabla bss_clientes).
 
     PARA EL FRONTEND:
-    - URL:  GET /api/v1/clients?skip=0&limit=100&segmento=B2B
-    - Uso:  tablas/buscadores de clientes (paginación con skip/limit).
+    - URL:  GET /api/v1/clients?skip=0&limit=100&segmento=B2B&search=904388543
+    - Uso:  tablas/buscadores de clientes (paginación con skip/limit y búsqueda por RUC, razón social o teléfono).
     - Query params:
       - skip:     registros a saltar (paginación)
       - limit:    máx. registros (1-500)
       - segmento: filtro (B2B, B2C, Gobierno) - opcional
+      - search:   término de búsqueda (RUC, razón social o número de celular) - opcional
     - Respuesta: lista de clientes con RUC, razón social, segmento, score, teléfono.
 
     Args:
         skip: Registros para saltar
         limit: Máximo de registros
         segmento: Filtrar por segmento (B2B, B2C, Gobierno)
+        search: Búsqueda por RUC, razón social o teléfono
     """
-    return await billing_service.get_clientes(db, skip, limit, segmento)
+    return await billing_service.get_clientes(db, skip, limit, segmento, search)
 
 
 @router.get("/{cliente_id}")

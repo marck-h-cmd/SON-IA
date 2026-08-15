@@ -35,7 +35,8 @@ export default function ClientsPage() {
       const result = await clientsService.getClientes(
         filters.skip,
         filters.limit,
-        filters.segmento || undefined
+        filters.segmento || undefined,
+        filters.search || undefined
       );
       setClientes(result.items);
       setTotal(result.total);
@@ -59,8 +60,11 @@ export default function ClientsPage() {
   };
 
   useEffect(() => {
-    fetchClientes();
-  }, [filters.skip, filters.limit, filters.segmento]);
+    const timer = setTimeout(() => {
+      fetchClientes();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters.skip, filters.limit, filters.segmento, filters.search]);
 
   const handleSegmentChange = (segmento: '' | 'B2B' | 'B2C' | 'Gobierno') => {
     setFilters({ ...filters, segmento, skip: 0 });
@@ -111,7 +115,13 @@ export default function ClientsPage() {
           <h2 className="text-lg font-semibold">Filtros y Búsqueda</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input type="text" placeholder="Buscar por RUC o razón social" label="Búsqueda" />
+            <Input
+              type="text"
+              placeholder="Buscar por RUC, razón social o teléfono..."
+              label="Búsqueda"
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value, skip: 0 })}
+            />
             <div>
               <label className="block text-sm font-medium mb-2">Segmento</label>
               <select

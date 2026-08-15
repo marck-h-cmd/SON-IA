@@ -12,10 +12,12 @@ export const clientsService = {
   async getClientes(
     skip: number = 0,
     limit: number = 10,
-    segmento?: 'B2B' | 'B2C' | 'Gobierno'
+    segmento?: 'B2B' | 'B2C' | 'Gobierno' | '',
+    search?: string
   ): Promise<ListPaginada<Cliente>> {
     const params: Record<string, unknown> = { skip, limit };
     if (segmento) params.segmento = segmento;
+    if (search && search.trim()) params.search = search.trim();
     const response = await apiClient.get('/clients', { params });
     return response.data;
   },
