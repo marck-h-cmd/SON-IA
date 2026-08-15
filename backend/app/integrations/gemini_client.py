@@ -49,6 +49,12 @@ class GeminiClient:
             "model": model,
         }
     
+    async def generate_content(self, prompt: str) -> str:
+        """Genera contenido de texto directo a partir de un prompt."""
+        res = await self.generate_text(prompt, use_pro=True)
+        return res.get("text", "")
+
+    
     async def classify_text(
         self,
         text: str,

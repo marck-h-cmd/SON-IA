@@ -25,6 +25,7 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
+async_session_factory = AsyncSessionLocal
 
 
 async def init_db() -> None:

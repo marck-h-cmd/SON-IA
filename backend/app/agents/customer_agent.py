@@ -1,59 +1,63 @@
 """
-Agente de Atención y Explicación (Customer Success AI)
-Modelo: Gemini 1.5 Pro
-Rol: Traducir complejidad técnica a lenguaje natural
+Agente de Atención y Explicación Contextual (Customer Success AI)
+Modelo: Gemini 1.5 Pro / LLM Híbrido + RAG
+Rol: Traducir complejidad técnica y normativa a lenguaje natural
 """
 
+import time
 from typing import Any, Dict, List, Optional
 import structlog
-import time
 
 from app.agents.base_agent import BaseAgent
+from app.rag.retrieval import retrieval_service
+from app.integrations.gemini_client import gemini_client
+from app.integrations.llm_client import MainLLMClient
 
 logger = structlog.get_logger(__name__)
 
 
 class CustomerAgent(BaseAgent):
     """
-    Agente de Atención al Cliente
+    Agente de Atención y Explicación al Cliente (SON-IA).
     
-    Responsable de:
-    1. Explicar facturas en lenguaje natural
-    2. Responder consultas vía chat contextual
-    3. Utilizar RAG para recuperar historial del cliente
-    
-    Modelo: Gemini 1.5 Pro (NLP, generación de texto, RAG)
+    Responsabilidades:
+    1. Responder preguntas sobre planes, tarifas, servicios y normativas usando RAG.
+    2. Explicar el desglose de facturas (PxQ, IGV 18%, cargos prorrateados).
+    3. Explicar intereses TAMN, fechas de corte y métodos de pago oficiales.
+    4. Generar respuestas en lenguaje natural cordiales, precisas y sin alucinaciones.
     """
     
     def __init__(self):
         super().__init__(
             name="Customer Success Agent",
-            model="gemini-1.5-pro",
-            version="1.0.0"
+            model="gemini-1.5-pro + RAG",
+            version="2.0.0"
         )
-        self.greeting_messages = [
-            "¡Hola! Soy el asistente virtual de SON-IA. ¿En qué puedo ayudarte?",
-            "Puedo explicarte tu factura, ayudarte con tus pagos o resolver tus dudas.",
-        ]
+        self.retrieval_service = retrieval_service
+        self.gemini = gemini_client
+        self.main_llm = MainLLMClient()
     
     async def execute(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Procesa una consulta del cliente.
+        Procesa una consulta del cliente con contexto RAG.
         
         Args:
             task: {
-                "type": "explain_invoice" | "answer_question",
+                "type": "answer_question" | "explain_invoice" | "explain_tamn" | "general_query",
+                "pregunta": "¿Qué incluye el Plan Elige Todo?",
                 "cliente_id": 1001,
-                "factura_id": 4001,
-                "pregunta": "¿Por qué pagué más este mes?"
+                "cliente_nombre": "Empresa SAC",
+                "factura": {...}  # Opcional
             }
         """
         start_time = time.time()
-        task_type = task.get("type", "")
+        task_type = task.get("type", "answer_question")
         
         try:
             if task_type == "explain_invoice":
                 result = await self._explain_invoice(task)
+            elif task_type == "explain_tamn":
+                result = await self._explain_tamn(task)
             elif task_type == "answer_question":
                 result = await self._answer_question(task)
             else:
@@ -68,78 +72,149 @@ class CustomerAgent(BaseAgent):
         except Exception as e:
             return await self.handle_error(e, task)
     
+    async def _answer_question(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Responde una pregunta general sobre servicios o normativas usando RAG contextual.
+        """
+        pregunta = task.get("pregunta", "").strip()
+        cliente_nombre = task.get("cliente_nombre", "Cliente")
+        
+        logger.info("💬 Customer Agent: Consultando RAG", pregunta=pregunta)
+        
+        # 1. Recuperar contexto RAG relevante
+        rag_context = await self.retrieval_service.format_context_for_llm(pregunta, top_k=3)
+        
+        # 2. Generar respuesta con LLM o síntesis contextual
+        system_prompt = (
+            "Eres el Asistente Virtual Oficial de SON-IA / Integratel Perú. "
+            "Responde de forma concisa, profesional y cordial. "
+            "Basa tu respuesta estrictamente en la base de conocimiento institucional proporcionada. "
+            "No inventes precios ni condiciones. Si un dato no está en el contexto, indícalo cortésmente."
+        )
+        
+        user_prompt = (
+            f"Contexto institucional:\n{rag_context}\n\n"
+            f"Pregunta del cliente ({cliente_nombre}): '{pregunta}'\n\n"
+            f"Redacta una respuesta clara en español para enviar por WhatsApp o Chat."
+        )
+        
+        respuesta_texto = ""
+        fuente_usada = "rag_contextual"
+        
+        # Intentar con Gemini
+        try:
+            gemini_res = await self.gemini.generate_content(f"{system_prompt}\n\n{user_prompt}")
+            if gemini_res and len(gemini_res.strip()) > 10:
+                respuesta_texto = gemini_res.strip()
+                fuente_usada = "gemini-1.5-pro + RAG"
+        except Exception as e:
+            logger.debug(f"ℹ️ Gemini no disponible, intentando MainLLM: {e}")
+        
+        # Fallback a MainLLM (Groq)
+        if not respuesta_texto:
+            try:
+                llm_res = await self.main_llm.generate_text(user_prompt, system_prompt=system_prompt, max_tokens=500)
+                choices = llm_res.get("choices", [])
+                if choices:
+                    respuesta_texto = choices[0].get("message", {}).get("content", "").strip()
+                    fuente_usada = "llama-3.3 + RAG"
+            except Exception as e:
+                logger.debug(f"ℹ️ MainLLM no disponible, usando formateador determinista RAG: {e}")
+        
+        # Fallback determinista seguro (Zero-Hallucination basado en fragmentos RAG)
+        if not respuesta_texto:
+            rag_docs = await self.retrieval_service.retrieve_context(pregunta, top_k=2)
+            if rag_docs:
+                top_doc = rag_docs[0].get("metadata", {})
+                respuesta_texto = (
+                    f"Hola {cliente_nombre} 👋, respecto a tu consulta:\n\n"
+                    f"📌 *{top_doc.get('title', 'Información')}*:\n"
+                    f"{top_doc.get('content', '')}\n\n"
+                    f"Para más detalles o gestionar tus servicios, estamos a tu disposición."
+                )
+            else:
+                respuesta_texto = (
+                    f"Hola {cliente_nombre} 👋, puedo ayudarte con información de tus planes, "
+                    f"explicación de facturas, cálculo de mora y canales de pago. "
+                    f"¿Podrías especificar tu consulta?"
+                )
+            fuente_usada = "motor_simbolico_rag"
+        
+        return {
+            "status": "success",
+            "pregunta": pregunta,
+            "respuesta": respuesta_texto,
+            "fuente": fuente_usada,
+            "rag_context_length": len(rag_context),
+        }
+    
     async def _explain_invoice(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Explica una factura en lenguaje natural.
-        
-        Usa RAG para recuperar información contextual del cliente.
+        Explica el desglose numérico de una factura en lenguaje claro y sin alucinaciones.
         """
-        factura_id = task.get("factura_id")
-        cliente_id = task.get("cliente_id")
+        factura = task.get("factura", {})
+        factura_id = task.get("factura_id") or factura.get("nro_doc_fiscal", "N/A")
+        monto_total = float(factura.get("charge_total_amount") or factura.get("monto_total") or 0.0)
+        subtotal = monto_total / 1.18 if monto_total > 0 else 0.0
+        igv = monto_total - subtotal
         
-        logger.info(f"💬 Customer Agent: Explicando factura {factura_id}")
-        
-        # Simulación de respuesta - En producción usaría Gemini + RAG
         explicacion = (
-            f"Hola, gracias por tu consulta sobre la factura #{factura_id}. "
-            f"Este mes tu factura incluye los siguientes conceptos:\n\n"
-            f"1. Servicio de Fibra Óptica: S/ 2,500.00 (mes completo)\n"
-            f"2. Servicio Cloud: S/ 1,800.00 (mes completo)\n\n"
-            f"Subtotal: S/ 3,644.07\n"
-            f"IGV (18%): S/ 655.93\n"
-            f"Total: S/ 4,300.00\n\n"
-            f"El monto es el mismo que el mes anterior porque no hubo cambios en tus servicios. "
-            f"¿Hay algo más en lo que pueda ayudarte?"
+            f"📄 *Detalle de tu Factura #{factura_id}*:\n\n"
+            f"• Subtotal (Base Imponible): S/ {subtotal:,.2f}\n"
+            f"• IGV (18% Ley SUNAT): S/ {igv:,.2f}\n"
+            f"• *Total a Pagar*: S/ {monto_total:,.2f}\n\n"
+            f"Esta factura corresponde al ciclo regular de tus servicios contratados. "
+            f"Puedes realizar el pago mediante transferencia bancaria o en nuestros canales autorizados."
         )
         
         return {
             "status": "success",
             "factura_id": factura_id,
             "respuesta": explicacion,
-            "fuente": "gemini-1.5-pro + RAG",
+            "fuente": "zero_hallucination_engine",
         }
     
-    async def _answer_question(self, task: Dict[str, Any]) -> Dict[str, Any]:
+    async def _explain_tamn(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Responde una pregunta específica del cliente usando RAG.
+        Explica de forma transparente el cálculo de intereses moratorios TAMN.
         """
-        pregunta = task.get("pregunta", "")
+        dias_vencido = task.get("dias_vencido", 0)
+        monto_original = float(task.get("monto_original", 0.0))
+        monto_interes = float(task.get("monto_interes", 0.0))
+        total = monto_original + monto_interes
         
-        logger.info(f"❓ Customer Agent: Respondiendo pregunta: {pregunta}")
-        
-        # Simulación - En producción usaría Gemini para generar respuesta contextual
-        respuesta = (
-            f"Entiendo tu consulta sobre '{pregunta}'. "
-            f"Revisando tu historial, veo que el cargo adicional corresponde "
-            f"al prorrateo por la activación de un nuevo servicio a mitad de mes. "
-            f"Este cargo es proporcional a los días de uso, como indica la normativa SUNAT."
+        explicacion = (
+            f"⚠️ *Información de Intereses Moratorios (TAMN)*:\n\n"
+            f"• Monto Original Vencido: S/ {monto_original:,.2f}\n"
+            f"• Días transcurridos: {dias_vencido} días\n"
+            f"• Interés Moratorio Aplicado (Tasa TAMN SBS): S/ {monto_interes:,.2f}\n"
+            f"• *Total Actualizado*: S/ {total:,.2f}\n\n"
+            f"💡 *Opciones*: Puedes acceder a un descuento por pronto pago o fraccionar tu saldo hoy mismo."
         )
         
         return {
             "status": "success",
-            "pregunta": pregunta,
-            "respuesta": respuesta,
+            "respuesta": explicacion,
+            "fuente": "tamn_engine",
         }
     
     async def _handle_general_query(self, task: Dict[str, Any]) -> Dict[str, Any]:
-        """Maneja consultas generales no categorizadas"""
+        """Menú de asistencia general para clientes"""
+        cliente_nombre = task.get("cliente_nombre", "")
+        saludo = f"¡Hola {cliente_nombre}! " if cliente_nombre else "¡Hola! "
+        
+        respuesta = (
+            f"{saludo}Soy SON-IA, tu asistente corporativo de Integratel. ¿En qué te puedo ayudar?\n\n"
+            f"1️⃣ Consultar saldo y facturas vencidas\n"
+            f"2️⃣ Explicar desglose de una factura o cálculo de mora TAMN\n"
+            f"3️⃣ Solicitar facilidades de pago y descuentos de negociación\n"
+            f"4️⃣ Consultar planes de Fibra Óptica, Voz y Móvil B2B"
+        )
+        
         return {
             "status": "success",
-            "respuesta": (
-                "¡Gracias por contactarnos! Puedo ayudarte con:\n"
-                "- Explicar tu factura\n"
-                "- Información de pagos\n"
-                "- Ofertas y descuentos\n"
-                "- Actualizar tus datos\n\n"
-                "¿Qué te gustaría hacer?"
-            ),
+            "respuesta": respuesta,
         }
-    
-    def get_welcome_message(self, cliente_nombre: str = "") -> str:
-        """Genera mensaje de bienvenida personalizado"""
-        if cliente_nombre:
-            return f"¡Hola {cliente_nombre}! Soy el asistente de SON-IA. ¿En qué puedo ayudarte hoy?"
-        return self.greeting_messages[0]
 
 
 # Singleton

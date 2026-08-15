@@ -194,3 +194,7 @@ class CollectionsService:
         await db.commit()
         
         return True
+
+
+# Singleton
+collections_service = CollectionsService()

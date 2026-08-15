@@ -1,0 +1,183 @@
+{
+  "vectors": {
+    "plan_fibra_optica_b2b": [
+      -8.169782131715891e-25,
+      -5.5332931741663084e-36,
+      7.641943957003644e-46,
+      -5.322387739996174e-67,
+      3.075618495540393e-56,
+      2.880037085353756e-73,
+      0.9999799727268949,
+      -0.006328834420225333
+    ],
+    "plan_voz_duo_ctrl": [
+      5.407104471233959e-64,
+      0.9958024671589859,
+      0.005329796192505296,
+      2.903134584485605e-41,
+      -1.3985913596473254e-23,
+      -0.0009629357812442298,
+      6.544205093905e-13,
+      0.09136800549045741
+    ],
+    "plan_movil_b2b_elige_todo": [
+      -5.578993681931151e-47,
+      1.3850687351995228e-12,
+      9.528711831753217e-11,
+      -9.966787916118983e-06,
+      -2.3261800830887906e-27,
+      -0.9999999999503316,
+      -4.013307398978884e-52,
+      -2.783773471369954e-18
+    ],
+    "plan_roaming_internacional": [
+      4.079050179863193e-10,
+      -1.9138761991652224e-34,
+      4.575021129363187e-45,
+      -8.91875595015671e-05,
+      0.9999999960227262,
+      -1.0437876570261177e-36,
+      3.523875046885266e-52,
+      3.562025062591265e-07
+    ],
+    "politica_cobranza_etapas_mora": [
+      1.0759163316981633e-31,
+      9.343597301090564e-62,
+      6.925958868303461e-06,
+      3.8203967331008895e-59,
+      -1.3022739382374651e-16,
+      -2.465040792851884e-21,
+      0.9999999999760156,
+      -1.0729425787356454e-19
+    ],
+    "politica_calculo_tamn": [
+      1.0,
+      -5.380892601848564e-10,
+      -4.3524626278214175e-52,
+      -1.6854659855634552e-54,
+      -1.0164018439287141e-56,
+      -1.2513810270124228e-63,
+      2.2169022295246035e-32,
+      1.639599650508614e-65
+    ],
+    "politica_negociacion_predictiva": [
+      1.0778171503235607e-30,
+      -1.9276063285622012e-64,
+      -1.6907462558667415e-45,
+      1.0,
+      -1.5748189688040493e-11,
+      2.8898671825377438e-36,
+      7.878717504897855e-49,
+      -7.11420987407526e-64
+    ],
+    "normativa_sunat_recibo_tipo_14": [
+      -0.6268222340044693,
+      -4.886700662159729e-19,
+      -5.211878248759739e-06,
+      -0.7791622981962634,
+      7.820053786743183e-43,
+      1.6778014273749432e-22,
+      -1.4048680992830335e-62,
+      4.845098933557444e-16
+    ],
+    "politica_atencion_reclamos": [
+      7.276338873247096e-13,
+      -1.2553327853088398e-44,
+      0.027825249335578117,
+      0.9996128027888662,
+      -3.74481393272326e-77,
+      3.404725956154029e-45,
+      9.859667153785501e-44,
+      -8.45803166327066e-66
+    ],
+    "canales_y_medios_pago": [
+      1.7866865655105413e-60,
+      -0.0006476756250404054,
+      -1.6961994211707913e-55,
+      2.914539769890141e-70,
+      -5.486468182487625e-20,
+      -9.71390030784013e-51,
+      -4.961814236976841e-57,
+      -0.9999997902581205
+    ]
+  },
+  "metadata": {
+    "plan_fibra_optica_b2b": {
+      "title": "Plan Fibra Óptica B2B Dedicada",
+      "category": "planes_servicios",
+      "content": "Servicio de Internet por Fibra Óptica para Empresas (B2B). Ofrece ancho de banda simétrico garantizado al 100%, IP fija pública incluida, SLA de disponibilidad de 99.85% y soporte técnico prioritario 24/7. Tarifas estándar: Fibra 200 Mbps (S/ 1,200.00 + IGV), Fibra 500 Mbps (S/ 2,500.00 + IGV), Fibra 1 Gbps (S/ 4,200.00 + IGV). Permanencia mínima contractual: 12 meses.",
+      "producto": "Fibra Óptica B2B",
+      "categoria": "Internet Fijo",
+      "segmento": "B2B",
+      "sla": "99.85%"
+    },
+    "plan_voz_duo_ctrl": {
+      "title": "Movistar Voz Dúo Control Empresarial",
+      "category": "planes_servicios",
+      "content": "Plan Dúo Plano que integra Telefonía Fija Digital con Internet Empresarial. Incluye minutos ilimitados a destinos fijos y móviles nacionales, central virtual básica, y conexión de banda ancha de respaldo. Cargo fijo mensual promedio: S/ 150.00 a S/ 350.00 + IGV según velocidad elegida. Ciclos de facturación habituales: Día 15 o Día 31 de cada mes.",
+      "producto": "Voz Dúo Control",
+      "categoria": "Telefonia e Internet",
+      "segmento": "B2B / Pyme"
+    },
+    "plan_movil_b2b_elige_todo": {
+      "title": "Planes Móviles B2B - Elige Todo y Control",
+      "category": "planes_servicios",
+      "content": "Planes móviles corporativos para líneas de staff y ejecutivos. 1. Plan Elige Todo+ Empresarial (S/ 56.90 + IGV): Datos ilimitados en alta velocidad hasta 50GB, minutos y SMS ilimitados, roaming internacional para datos en América Latina incluido. 2. Plan Control Ahorro (S/ 39.90 + IGV): 25GB de datos, minutos ilimitados, consumo controlado sin excedentes. 3. Plan Móvil Abierto Corporativo (S/ 89.90 + IGV): Datos ilimitados sin degradación, minutos internacionales a USA/Canadá. Todos los planes permiten compartir gigas entre cuentas corporativas autorizadas.",
+      "producto": "Planta Movil B2B",
+      "categoria": "Telefonia Movil",
+      "segmento": "B2B"
+    },
+    "plan_roaming_internacional": {
+      "title": "Servicio Roaming de Datos Internacional",
+      "category": "planes_servicios",
+      "content": "Activación de paquetes de datos y voz en el extranjero para líneas corporativas. Zonas de cobertura: Zona 1 (América y Europa: S/ 30.00 por día o S/ 120.00 por paquete de 5GB semanal), Zona 2 (Asia y Oceanía: S/ 50.00 por día). Para evitar cobros involuntarios, las líneas con 'Plan Control' requieren confirmación previa antes de activar roaming.",
+      "producto": "Roaming Internacional",
+      "categoria": "Servicios Adicionales",
+      "segmento": "B2B"
+    },
+    "politica_cobranza_etapas_mora": {
+      "title": "Políticas de Cobranza y Etapas de Mora",
+      "category": "politicas_cobranza",
+      "content": "Clasificación oficial de etapas de mora en Integratel / SON-IA: 1. Mora Temprana (1 a 7 días de vencido): Recordatorio preventivo amable vía WhatsApp y correo electrónico. 2. Mora Media (8 a 14 días de vencido): Segundo aviso, cálculo de interés compensatorio e inicio de ofertas de facilidades. 3. Mora Tardía (15 a 30 días de vencido): Notificación formal de suspensión temporal de servicio saliente. 4. Mora Crítica (> 30 días de vencido): Suspensión total del servicio, cálculo acumulado TAMN y derivación a gestión legal o cobranza especializada.",
+      "categoria": "Cobranzas",
+      "aplicacion": "Cuentas con facturas vencidas"
+    },
+    "politica_calculo_tamn": {
+      "title": "Cálculo de Tasa de Interés Moratorio (TAMN)",
+      "category": "politicas_cobranza",
+      "content": "El cálculo de intereses moratorios se rige bajo la Tasa Activa en Moneda Nacional (TAMN) publicada por la Superintendencia de Banca, Seguros y AFP (SBS) del Perú. Fórmula aplicada por el Motor Simbólico Zero-Hallucination: Interés Moratorio = Monto Pendiente * ((1 + Tasa_Diaria)^Dias_Vencidos - 1). Tasa diaria referencial estándar: 0.042% diario (aproximado 15.3% anual según regulación SBS). Los intereses se calculan a partir del primer día posterior a la fecha de vencimiento consignada en el comprobante.",
+      "categoria": "TAMN e Intereses",
+      "regulacion": "SBS / Banco Central de Reserva del Perú"
+    },
+    "politica_negociacion_predictiva": {
+      "title": "Política de Negociación Predictiva y Descuentos",
+      "category": "politicas_cobranza",
+      "content": "A los clientes en riesgo de impago o con facturas por vencer (T-5 días), el Agente de Negociación puede generar ofertas preventivas según su score de confianza: - Score Confianza >= 0.75 (Happy Path): Sin descuento financiero; recordatorio con métodos de pago digitales. - Score Confianza 0.40 - 0.74 (Warning Path): Descuento por pronto pago entre 5% y 15% condicionado a pago en 48 horas. - Score Confianza < 0.40 (Unhappy Path): Fraccionamiento en hasta 3 cuotas o condonación de hasta 20% de intereses TAMN. Cualquier descuento superior al 20% o en facturas > S/ 100,000 requiere autorización en el Centro HITL (Human-in-the-Loop).",
+      "categoria": "Negociacion Predictiva",
+      "limite_autonomo": "20% maximo descuento"
+    },
+    "normativa_sunat_recibo_tipo_14": {
+      "title": "Normativa SUNAT: Recibos por Servicios Públicos (Tipo 14) y Facturas (Tipo 01)",
+      "category": "facturacion_fiscal",
+      "content": "1. Recibo de Servicios Públicos (Tipo 14): Documento electrónico regulado por SUNAT para servicios de telecomunicaciones, internet y telefonía fija/móvil. Otorga derecho a crédito fiscal de IGV. 2. Impuesto General a las Ventas (IGV): Tasa fija del 18.00% aplicada sobre la base imponible (subtotal). 3. Moneda: Soles Peruanos (PEN - S/) con opción en dólares para contratos específicos. 4. Ciclos de Facturación: Ciclo 15 (emisión día 15, vencimiento día 05 del mes siguiente) y Ciclo 31 (emisión último día del mes, vencimiento día 20 del mes siguiente).",
+      "normativa": "SUNAT Resolucion de Superintendencia N° 123-2020",
+      "tipo_comprobante": "Tipo 14 y 01",
+      "igv": "18%"
+    },
+    "politica_atencion_reclamos": {
+      "title": "Procedimiento de Reclamos y Disputas de Facturación",
+      "category": "atencion_cliente",
+      "content": "Si un cliente detecta una discrepancia en su factura (ejemplo: prorrateo de días no disfrutados, cargos por servicios no contratados o falla técnica prolongada): 1. El cliente puede solicitar una explicación automática vía WhatsApp las 24 horas. 2. Si la inconsistencia se confirma (score de validación < 0.80), el sistema emite una Nota de Crédito Electrónica (Comprobante Tipo 07) para rectificar el monto facturado. 3. Plazo máximo de resolución de disputas: 5 días hábiles conforme a directivas de OSIPTEL.",
+      "regulador": "OSIPTEL",
+      "comprobante_rectificatorio": "Nota de Credito Tipo 07"
+    },
+    "canales_y_medios_pago": {
+      "title": "Canales Oficiales y Métodos de Pago Habilitados",
+      "category": "procedimientos_pago",
+      "content": "Medios de pago autorizados para saldar facturas y acuerdos de negociación: 1. Transferencia Bancaria Interbancaria (BCP, BBVA, Scotiabank, Interbank) indicando RUC/Código de Cliente. 2. Débito Automático en Cuenta o Tarjeta de Crédito Corporativa. 3. Pago Directo por Pasarela Web o enlace seguro de WhatsApp. 4. Agentes autorizados y ventanillas bancarias con Código de Pago de Recaudación Integratel (CP: 49821). La conciliación bancaria se ejecuta automáticamente en un plazo de 15 a 60 minutos mediante el servicio asíncrono.",
+      "categoria": "Pagos",
+      "codigo_recaudacion": "49821",
+      "tiempo_conciliacion": "15-60 min"
+    }
+  }
+}

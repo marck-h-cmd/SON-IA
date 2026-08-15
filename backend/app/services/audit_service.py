@@ -17,24 +17,28 @@ class AuditService:
     
     async def log_action(
         self,
-        agente: str,
-        modelo: str,
-        accion: str,
-        detalle: Dict[str, Any],
-        resultado: str,
+        agente: Optional[str] = None,
+        modelo: Optional[str] = None,
+        accion: Optional[str] = None,
+        detalle: Optional[Dict[str, Any]] = None,
+        resultado: Optional[str] = "exitoso",
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Registra una acción en el log de auditoría
         """
-        logger.info(f"📝 Audit: {agente} - {accion} - {resultado}")
+        actor = agente or kwargs.get("usuario") or "Sistema"
+        act = accion or kwargs.get("tipo_accion") or "accion"
+        res = resultado or "exitoso"
+        logger.info(f"📝 Audit: {actor} - {act} - {res}")
         
         return {
             "id": "1",
             "timestamp": datetime.utcnow().isoformat(),
-            "agente": agente,
-            "modelo": modelo,
-            "accion": accion,
-            "resultado": resultado,
+            "agente": actor,
+            "modelo": modelo or "N/A",
+            "accion": act,
+            "resultado": res,
         }
     
     async def get_audit_logs(
@@ -147,3 +151,8 @@ class AuditService:
             if str(item["id"]) == str(action_id):
                 return item
         return None
+
+
+# Singleton
+audit_service = AuditService()
+
