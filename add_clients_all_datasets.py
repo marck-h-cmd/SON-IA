@@ -108,38 +108,10 @@ with open(csv_path, 'w', newline='', encoding='latin1') as f:
 
 print("✓ 003_TBL_PLANTA_MOVIL_B2B.csv actualizado (+6 líneas: 2 por cliente)")
 
-# 3. Agregar a 004_TBL_PAGOS_B2B.csv
-csv_path = DATASET_DIR / "004_TBL_PAGOS_B2B.csv"
-with open(csv_path, 'r', encoding='latin1') as f:
-    reader = csv.DictReader(f, delimiter='|')
-    fieldnames = reader.fieldnames
-    rows = list(reader)
+# 3. 004_TBL_PAGOS_B2B.csv (No agregar pagos para que las facturas queden POR COBRAR / PENDIENTES)
+print("✓ 004_TBL_PAGOS_B2B.csv: facturas mantenidas sin pago (por cobrar)")
 
-for client in new_clients:
-    new_row = {
-        'TIPO_DOCUMENTO': 'RUC',
-        'NRO_IDENTIFICACION_FISCAL': client['NUMERO_IDENTIFICACION_FISCAL'],
-        'RAZON_SOCIAL': client['RAZON_SOCIAL'],
-        'COD_CLIENTE': client['COD_CLIENTE'],
-        'COD_CUENTA': str(int(client['COD_CLIENTE']) + 100000),
-        'SISTEMA': 'AMDOCS',
-        'FACTURA_AFECTADA': f"S8AA-{str(int(client['COD_CLIENTE']) + 10000000).zfill(10)}",
-        'FECHA_PAGO': '2026-07-15',
-        'MONEDA_FACTURA': 'PEN',
-        'SUBTOTAL': '100.00',
-        'IGV': '18.00',
-        'MONTO_PAGADO': '118.00'
-    }
-    rows.append(new_row)
-
-with open(csv_path, 'w', newline='', encoding='latin1') as f:
-    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter='|')
-    writer.writeheader()
-    writer.writerows(rows)
-
-print("✓ 004_TBL_PAGOS_B2B.csv actualizado (+3 clientes)")
-
-# 4. Agregar a 005_TBL_FACTURAS_B2B.csv
+# 4. Agregar a 005_TBL_FACTURAS_B2B.csv con fecha vigente (NO VENCIDA)
 csv_path = DATASET_DIR / "005_TBL_FACTURAS_B2B.csv"
 with open(csv_path, 'r', encoding='latin1') as f:
     reader = csv.DictReader(f, delimiter='|')
@@ -155,8 +127,8 @@ for client in new_clients:
         'NRO_DOC_FISCAL': f"S8AA-{str(int(client['COD_CLIENTE']) + 10000000).zfill(10)}",
         'FUENTE': 'FACTURACION CICLICA',
         'SISTEMA': 'AMDOCS',
-        'FECHA_EMISION': '20260627',
-        'FECHA_VTO': '2026-07-13',
+        'FECHA_EMISION': '20260805',
+        'FECHA_VTO': '2026-08-28',
         'MONEDA': 'PEN',
         'CHARGE_NET_AMOUNT': '100.00',
         'CHARGE_IGV_INVOICE': '18.00',
@@ -169,7 +141,7 @@ with open(csv_path, 'w', newline='', encoding='latin1') as f:
     writer.writeheader()
     writer.writerows(rows)
 
-print("✓ 005_TBL_FACTURAS_B2B.csv actualizado (+3 clientes)")
+print("✓ 005_TBL_FACTURAS_B2B.csv actualizado (+3 facturas por cobrar no vencidas)")
 
 # 5. Agregar a 006_TBL_NOTAS_CREDITO_B2B.csv
 csv_path = DATASET_DIR / "006_TBL_NOTAS_CREDITO_B2B.csv"
