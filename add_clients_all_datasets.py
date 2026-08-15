@@ -24,8 +24,10 @@ new_clients = [
     }
 ]
 
+DATASET_DIR = Path(__file__).resolve().parent / "DATASET"
+
 # 1. Agregar a 002_TBL_PLANTA_FIJA_B2B.csv
-csv_path = Path("/run/media/pandaman/Datos/UNT/PROYECTOS/SON-IA/DATASET/002_TBL_PLANTA_FIJA_B2B.csv")
+csv_path = DATASET_DIR / "002_TBL_PLANTA_FIJA_B2B.csv"
 with open(csv_path, 'r', encoding='latin1') as f:
     reader = csv.DictReader(f, delimiter='|')
     fieldnames = reader.fieldnames
@@ -67,7 +69,7 @@ with open(csv_path, 'w', newline='', encoding='latin1') as f:
 print("✓ 002_TBL_PLANTA_FIJA_B2B.csv actualizado (+3 clientes)")
 
 # 2. Agregar a 003_TBL_PLANTA_MOVIL_B2B.csv
-csv_path = Path("/run/media/pandaman/Datos/UNT/PROYECTOS/SON-IA/DATASET/003_TBL_PLANTA_MOVIL_B2B.csv")
+csv_path = DATASET_DIR / "003_TBL_PLANTA_MOVIL_B2B.csv"
 with open(csv_path, 'r', encoding='latin1') as f:
     reader = csv.DictReader(f, delimiter='|')
     fieldnames = reader.fieldnames
@@ -107,7 +109,7 @@ with open(csv_path, 'w', newline='', encoding='latin1') as f:
 print("✓ 003_TBL_PLANTA_MOVIL_B2B.csv actualizado (+6 líneas: 2 por cliente)")
 
 # 3. Agregar a 004_TBL_PAGOS_B2B.csv
-csv_path = Path("/run/media/pandaman/Datos/UNT/PROYECTOS/SON-IA/DATASET/004_TBL_PAGOS_B2B.csv")
+csv_path = DATASET_DIR / "004_TBL_PAGOS_B2B.csv"
 with open(csv_path, 'r', encoding='latin1') as f:
     reader = csv.DictReader(f, delimiter='|')
     fieldnames = reader.fieldnames
@@ -138,7 +140,7 @@ with open(csv_path, 'w', newline='', encoding='latin1') as f:
 print("✓ 004_TBL_PAGOS_B2B.csv actualizado (+3 clientes)")
 
 # 4. Agregar a 005_TBL_FACTURAS_B2B.csv
-csv_path = Path("/run/media/pandaman/Datos/UNT/PROYECTOS/SON-IA/DATASET/005_TBL_FACTURAS_B2B.csv")
+csv_path = DATASET_DIR / "005_TBL_FACTURAS_B2B.csv"
 with open(csv_path, 'r', encoding='latin1') as f:
     reader = csv.DictReader(f, delimiter='|')
     fieldnames = reader.fieldnames
@@ -170,7 +172,7 @@ with open(csv_path, 'w', newline='', encoding='latin1') as f:
 print("✓ 005_TBL_FACTURAS_B2B.csv actualizado (+3 clientes)")
 
 # 5. Agregar a 006_TBL_NOTAS_CREDITO_B2B.csv
-csv_path = Path("/run/media/pandaman/Datos/UNT/PROYECTOS/SON-IA/DATASET/006_TBL_NOTAS_CREDITO_B2B.csv")
+csv_path = DATASET_DIR / "006_TBL_NOTAS_CREDITO_B2B.csv"
 with open(csv_path, 'r', encoding='latin1') as f:
     reader = csv.DictReader(f, delimiter='|')
     fieldnames = reader.fieldnames

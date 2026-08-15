@@ -3,7 +3,8 @@ import random
 from pathlib import Path
 
 # Leer el archivo de clientes
-csv_path = Path("/run/media/pandaman/Datos/UNT/PROYECTOS/SON-IA/DATASET/001_TBL_CLIENTES_B2B.csv")
+DATASET_DIR = Path(__file__).resolve().parent / "DATASET"
+csv_path = DATASET_DIR / "001_TBL_CLIENTES_B2B.csv"
 
 # Prefijos de números de celular peruanos realistas
 movistar_prefixes = ['901', '910', '914', '915', '916', '961']

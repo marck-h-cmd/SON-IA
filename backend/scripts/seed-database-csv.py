@@ -85,6 +85,7 @@ async def seed_data():
                     sunat_departamento=clean_val(row.get("SUNAT_DEPARTAMENTO")),
                     sunat_provincia=clean_val(row.get("SUNAT_PROVINCIA")),
                     sunat_distrito=clean_val(row.get("SUNAT_DISTRITO")),
+                    numero_celular=clean_val(row.get("NUMERO_CELULAR")),
                 )
                 session.add(cliente)
                 inserted_rucs.add(ruc)
