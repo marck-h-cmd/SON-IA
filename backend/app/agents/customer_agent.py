@@ -86,16 +86,16 @@ class CustomerAgent(BaseAgent):
         
         # 2. Generar respuesta con LLM o síntesis contextual
         system_prompt = (
-            "Eres el Asistente Virtual Oficial de SON-IA / Integratel Perú. "
-            "Responde de forma concisa, profesional y cordial. "
-            "Basa tu respuesta estrictamente en la base de conocimiento institucional proporcionada. "
-            "No inventes precios ni condiciones. Si un dato no está en el contexto, indícalo cortésmente."
+            "Eres un asesor de atención al cliente humano, cálido, empático y muy profesional de Movistar Empresas / Integratel Perú. "
+            "Responde en español de forma natural, amigable y conversacional (ideal para WhatsApp, usando emojis oportunos y buena claridad). "
+            "NUNCA menciones que eres una IA, un bot, un asistente virtual, ni hagas referencia a metadatos, RAG, bases de datos o algoritmos. "
+            "Brinda siempre respuestas claras, útiles y transparentes basadas en los planes y servicios de la empresa."
         )
         
         user_prompt = (
-            f"Contexto institucional:\n{rag_context}\n\n"
-            f"Pregunta del cliente ({cliente_nombre}): '{pregunta}'\n\n"
-            f"Redacta una respuesta clara en español para enviar por WhatsApp o Chat."
+            f"Información de servicios y políticas:\n{rag_context}\n\n"
+            f"Consulta del cliente: '{pregunta}'\n\n"
+            f"Redacta una respuesta amable, directa y profesional para responderle por WhatsApp."
         )
         
         respuesta_texto = ""
@@ -121,22 +121,24 @@ class CustomerAgent(BaseAgent):
             except Exception as e:
                 logger.debug(f"ℹ️ MainLLM no disponible, usando formateador determinista RAG: {e}")
         
-        # Fallback determinista seguro (Zero-Hallucination basado en fragmentos RAG)
+        # Fallback determinista seguro
         if not respuesta_texto:
             rag_docs = await self.retrieval_service.retrieve_context(pregunta, top_k=2)
             if rag_docs:
                 top_doc = rag_docs[0].get("metadata", {})
+                saludo = f"¡Hola {cliente_nombre}! 😊 " if cliente_nombre else "¡Hola! 😊 "
                 respuesta_texto = (
-                    f"Hola {cliente_nombre} 👋, respecto a tu consulta:\n\n"
-                    f"📌 *{top_doc.get('title', 'Información')}*:\n"
+                    f"{saludo}Con gusto te brindamos la información sobre tu consulta:\n\n"
+                    f"📌 *{top_doc.get('title', 'Detalle')}*:\n"
                     f"{top_doc.get('content', '')}\n\n"
-                    f"Para más detalles o gestionar tus servicios, estamos a tu disposición."
+                    f"¿Deseas que te ayudemos con alguna duda adicional o con la contratación de este servicio?"
                 )
             else:
+                saludo = f"¡Hola {cliente_nombre}! 😊 " if cliente_nombre else "¡Hola! 😊 "
                 respuesta_texto = (
-                    f"Hola {cliente_nombre} 👋, puedo ayudarte con información de tus planes, "
-                    f"explicación de facturas, cálculo de mora y canales de pago. "
-                    f"¿Podrías especificar tu consulta?"
+                    f"{saludo}Con gusto te ayudamos con información sobre tus recibos, "
+                    f"planes de fibra óptica, servicios móviles o facilidades de pago. "
+                    f"¿En qué te podemos colaborar hoy?"
                 )
             fuente_usada = "motor_simbolico_rag"
         
@@ -159,12 +161,12 @@ class CustomerAgent(BaseAgent):
         igv = monto_total - subtotal
         
         explicacion = (
-            f"📄 *Detalle de tu Factura #{factura_id}*:\n\n"
-            f"• Subtotal (Base Imponible): S/ {subtotal:,.2f}\n"
-            f"• IGV (18% Ley SUNAT): S/ {igv:,.2f}\n"
-            f"• *Total a Pagar*: S/ {monto_total:,.2f}\n\n"
-            f"Esta factura corresponde al ciclo regular de tus servicios contratados. "
-            f"Puedes realizar el pago mediante transferencia bancaria o en nuestros canales autorizados."
+            f"📄 *Detalle de tu Recibo #{factura_id}*:\n\n"
+            f"• Base del plan (Subtotal): S/ {subtotal:,.2f}\n"
+            f"• IGV (18%): S/ {igv:,.2f}\n"
+            f"• *Total a pagar*: *S/ {monto_total:,.2f}*\n\n"
+            f"Este monto corresponde al ciclo regular de tus servicios contratados. "
+            f"Puedes realizar el pago por Yape o desde la app/web de tu banco. ¿Tienes alguna duda puntual sobre tus consumos?"
         )
         
         return {
@@ -184,12 +186,12 @@ class CustomerAgent(BaseAgent):
         total = monto_original + monto_interes
         
         explicacion = (
-            f"⚠️ *Información de Intereses Moratorios (TAMN)*:\n\n"
-            f"• Monto Original Vencido: S/ {monto_original:,.2f}\n"
+            f"⚠️ *Detalle de tu saldo e intereses de mora*:\n\n"
+            f"• Saldo original vencido: S/ {monto_original:,.2f}\n"
             f"• Días transcurridos: {dias_vencido} días\n"
-            f"• Interés Moratorio Aplicado (Tasa TAMN SBS): S/ {monto_interes:,.2f}\n"
-            f"• *Total Actualizado*: S/ {total:,.2f}\n\n"
-            f"💡 *Opciones*: Puedes acceder a un descuento por pronto pago o fraccionar tu saldo hoy mismo."
+            f"• Recargo por mora acumulado: S/ {monto_interes:,.2f}\n"
+            f"• *Total actualizado*: *S/ {total:,.2f}*\n\n"
+            f"💡 *Te recomendamos*: Si regularizas hoy, puedes acceder a un descuento por pronto pago o fraccionar tu saldo para evitar recargos de reconexión. ¿Deseas ver las opciones?"
         )
         
         return {
@@ -201,14 +203,14 @@ class CustomerAgent(BaseAgent):
     async def _handle_general_query(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Menú de asistencia general para clientes"""
         cliente_nombre = task.get("cliente_nombre", "")
-        saludo = f"¡Hola {cliente_nombre}! " if cliente_nombre else "¡Hola! "
+        saludo = f"¡Hola {cliente_nombre}! 😊 " if cliente_nombre else "¡Hola! 😊 "
         
         respuesta = (
-            f"{saludo}Soy SON-IA, tu asistente corporativo de Integratel. ¿En qué te puedo ayudar?\n\n"
-            f"1️⃣ Consultar saldo y facturas vencidas\n"
-            f"2️⃣ Explicar desglose de una factura o cálculo de mora TAMN\n"
-            f"3️⃣ Solicitar facilidades de pago y descuentos de negociación\n"
-            f"4️⃣ Consultar planes de Fibra Óptica, Voz y Móvil B2B"
+            f"{saludo}Te damos la bienvenida a Movistar Empresas. ¿En qué te podemos ayudar hoy?\n\n"
+            f"• Consultar tu saldo o fecha de vencimiento\n"
+            f"• Explicación de consumos o detalle de tu recibo\n"
+            f"• Facilidades y acuerdos especiales de pago\n"
+            f"• Planes de Fibra Óptica, Voz y Móvil para empresas"
         )
         
         return {

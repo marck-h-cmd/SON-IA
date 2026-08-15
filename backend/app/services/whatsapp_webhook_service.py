@@ -31,6 +31,23 @@ from app.integrations.openwa_client import to_chat_id  # noqa: F401
 logger = structlog.get_logger(__name__)
 
 
+def _format_friendly_name(raw_name: Optional[str]) -> str:
+    """Convierte 'MARCK ALESSANDRO HERMENEGILDO PACHECO' o 'EMPRESA_SAC' a 'Marck' o 'Marck Alessandro'."""
+    if not raw_name:
+        return ""
+    clean = re.sub(r"[_\-]+", " ", str(raw_name)).strip()
+    words = [w.capitalize() for w in clean.split() if w]
+    if not words:
+        return ""
+    # Si es empresa con palabras comunes, mantener nombre legible
+    if words[0].lower() in ["empresa", "corporacion", "inversiones", "grupo", "servicios", "comercial"]:
+        return " ".join(words[:3])
+    # Si es nombre de persona, devolver primer nombre o dos nombres cortos
+    if len(words) >= 2 and len(words[0]) <= 7:
+        return f"{words[0]} {words[1]}"
+    return words[0]
+
+
 class WhatsAppWebhookService:
     """Procesa mensajes entrantes de WhatsApp y responde automáticamente con datos y RAG."""
 
@@ -119,20 +136,20 @@ class WhatsAppWebhookService:
         intent = "consulta_general"
 
         if any(kw in message_lower for kw in ["cuánto debo", "cuanto debo", "saldo", "deuda", "adeudo",
-                                              "cuánto pagar", "cuanto pagar", "pagar mi factura", "pagarla"]):
+                                              "cuánto pagar", "cuanto pagar", "pagar mi factura", "pagarla", "mis recibos"]):
             intent = "consulta_saldo"
         elif any(kw in message_lower for kw in ["vence", "vencimiento", "mi recibo", "mi factura",
-                                                "por qué subió", "porque subio", "desglose"]):
+                                                "por qué subió", "porque subio", "desglose", "detalle recibo"]):
             intent = "consulta_factura"
         elif any(kw in message_lower for kw in ["descuento", "no puedo pagar", "facilidad", "plazo",
-                                                "negociar", "rebaja", "mis cuotas", "cuotas", "fraccionar"]):
+                                                "negociar", "rebaja", "mis cuotas", "cuotas", "fraccionar", "acuerdo"]):
             intent = "negociacion"
         elif any(kw in message_lower for kw in ["plan", "planes", "fibra", "velocidad", "roaming",
-                                                "tarifa", "duo", "tamn", "mora", "interes", "reclamo", "sunat"]):
+                                                "tarifa", "duo", "tamn", "mora", "interes", "reclamo", "sunat", "requisitos"]):
             intent = "consulta_rag"
-        elif any(kw in message_lower for kw in ["hola", "buenas", "saludos", "ayuda", "quién", "quien eres"]):
+        elif any(kw in message_lower for kw in ["hola", "buenas", "saludos", "ayuda", "buen dia", "buenos dias", "buenas tardes"]):
             intent = "saludo"
-        elif any(kw in message_lower for kw in ["gracias", "ok", "listo", "perfecto"]):
+        elif any(kw in message_lower for kw in ["gracias", "ok", "listo", "perfecto", "muchas gracias", "vale"]):
             intent = "despedida"
 
         factura_id = factura_match.group(1) if factura_match else None
@@ -170,26 +187,26 @@ class WhatsAppWebhookService:
         intent: Dict[str, Any],
         message: str,
     ) -> str:
-        """Construye la respuesta usando datos de BD y RAG."""
+        """Construye la respuesta de forma cálida, humana y sin metadatos técnicos."""
+        nombre = _format_friendly_name(cliente.razon_social) if cliente else "amigo(a)"
+        intent_type = intent["intent"]
+        factura_id = intent.get("factura_id")
+
         if not cliente:
-            # Aunque el cliente no esté en la BD, si hace una pregunta de planes o políticas, responder con RAG
-            if intent.get("intent") in ("consulta_rag", "consulta_general"):
+            # Si hace una pregunta general de planes o servicios
+            if intent_type in ("consulta_rag", "consulta_general"):
                 rag_res = await customer_agent.execute({
                     "type": "answer_question",
                     "pregunta": message,
-                    "cliente_nombre": "Estimado cliente",
+                    "cliente_nombre": "",
                 })
-                return rag_res.get("respuesta", "Hola 👋, para consultas de cuenta proporcione su RUC registrado.")
+                return rag_res.get("respuesta", "¡Hola! 😊 Con gusto te ayudamos. ¿En qué servicio o plan estás interesado?")
             
             return (
-                "Hola 👋, no pudimos identificar una cuenta registrada con este número. "
-                "Si deseas información sobre nuestros planes de Fibra Óptica, Móvil B2B o políticas de pago, "
-                "escríbenos tu consulta."
+                "¡Hola! 😊 Un gusto saludarte. Te damos la bienvenida a Movistar Empresas.\n\n"
+                "Para consultas sobre tu cuenta o facturación, por favor indícanos tu número de RUC o documento registrado. "
+                "Si deseas conocer nuestros planes de Fibra Óptica y servicios corporativos, ¡cuéntanos qué necesitas y con gusto te orientamos!"
             )
-
-        nombre = (cliente.razon_social or "cliente").split("_")[-1]
-        intent_type = intent["intent"]
-        factura_id = intent.get("factura_id")
 
         if intent_type == "consulta_saldo":
             return await self._reply_saldo(db, cliente, nombre)
@@ -198,7 +215,6 @@ class WhatsAppWebhookService:
         if intent_type == "negociacion":
             return await self._reply_oferta(cliente, nombre)
         if intent_type == "consulta_rag":
-            # Responder usando el RAG institucional enriquecido
             rag_res = await customer_agent.execute({
                 "type": "answer_question",
                 "pregunta": message,
@@ -207,44 +223,46 @@ class WhatsAppWebhookService:
             return rag_res.get("respuesta", "")
         if intent_type == "saludo":
             return (
-                f"Hola {nombre} 👋, soy SON-IA, tu asistente virtual de Integratel / Movistar Empresas.\n\n"
-                "Puedo ayudarte a:\n"
-                "• Consultar tu saldo y facturas pendientes\n"
-                "• Gestionar descuentos y acuerdos de pago\n"
-                "• Explicar detalles de tus planes y servicios B2B\n\n"
-                "¿En qué puedo orientarte hoy?"
+                f"¡Hola {nombre}! 😊 Un gusto saludarte. ¿Cómo te podemos ayudar hoy?\n\n"
+                "Podemos ayudarte con:\n"
+                "• Ver tu saldo o fecha de vencimiento\n"
+                "• Consultar el detalle de tus recibos\n"
+                "• Facilidades y acuerdos de pago\n"
+                "• Información sobre planes y servicios para tu empresa"
             )
         if intent_type == "despedida":
-            return f"¡Con gusto {nombre}! Que tengas un excelente día. Quedo atento si necesitas algo más. 👋"
+            return f"¡Con muchísimo gusto, {nombre}! Que tengas un excelente día. Si necesitas cualquier otra cosa, aquí estamos para ayudarte. 👋✨"
 
-        # Fallback a RAG contextual para preguntas no estructuradas
+        # Fallback contextual natural
         rag_res = await customer_agent.execute({
             "type": "answer_question",
             "pregunta": message,
             "cliente_nombre": nombre,
         })
-        return rag_res.get("respuesta", f"Entendido {nombre} ✅. ¿En qué más puedo ayudarte?")
+        return rag_res.get("respuesta", f"Entendido, {nombre} 😊. ¿Hay algo más en lo que te podamos orientar?")
 
     async def _reply_saldo(self, db: AsyncSession, cliente: BSSCliente, nombre: str) -> str:
         facturas = await self._unpaid_invoices(db, cliente.numero_identificacion_fiscal)
         if not facturas:
-            return f"¡Excelente {nombre}! 🎉 No tienes facturas pendientes de pago al día de hoy."
+            return f"¡Excelentes noticias, {nombre}! 🎉 No tienes recibos pendientes de pago al día de hoy. Tu cuenta está completamente al día."
 
         deuda_total = sum(Decimal(str(f.charge_total_amount or 0)) for f in facturas)
         vencidas = [f for f in facturas if f.fecha_vto and f.fecha_vto < date.today()]
 
         mensaje = (
-            f"Hola {nombre} 👋, tu saldo pendiente es de *S/ {deuda_total:,.2f}* "
-            f"en {len(facturas)} factura(s).\n\n"
+            f"¡Hola {nombre}! 😊 Tu saldo pendiente es de *S/ {deuda_total:,.2f}* "
+            f"en {len(facturas)} recibo(s):\n\n"
         )
         for f in facturas[:3]:
-            estado = "⚠️ VENCIDA" if f.fecha_vto and f.fecha_vto < date.today() else "vigente"
-            vto = f.fecha_vto.strftime("%d/%m/%Y") if f.fecha_vto else "s/f"
-            mensaje += f"• Factura *{f.nro_doc_fiscal}*: S/ {float(f.charge_total_amount or 0):,.2f} ({estado}, vence {vto})\n"
+            estado = "⚠️ Vencido" if f.fecha_vto and f.fecha_vto < date.today() else "Vigente"
+            vto = f.fecha_vto.strftime("%d/%m/%Y") if f.fecha_vto else "por confirmar"
+            mensaje += f"• Recibo *{f.nro_doc_fiscal}*: S/ {float(f.charge_total_amount or 0):,.2f} ({estado}, vence {vto})\n"
+
+        codigo_pago = (cliente.numero_identificacion_fiscal or "")[:10]
+        mensaje += f"\nPuedes pagar fácil con tu código de pago *{codigo_pago}* desde Yape, BCP o tu banca móvil."
 
         if vencidas:
-            mensaje += ("\n💡 Tienes facturas con mora. Podemos ofrecerte facilidades de pago o "
-                        "descuento por pronto pago. Responde *'negociar'* para ver opciones.")
+            mensaje += "\n\n💡 Si necesitas facilidades de pago o un descuento especial por pronto pago, solo avísanos y con gusto te brindamos opciones."
         return mensaje
 
     async def _reply_factura(
@@ -259,14 +277,14 @@ class WhatsAppWebhookService:
         if factura_id:
             matching = [f for f in facturas if factura_id in f.nro_doc_fiscal]
             if not matching:
-                return f"No encontré una factura activa con el identificador '{factura_id}'."
+                return f"No encontré un recibo pendiente con el número '{factura_id}'. Si deseas, indícanos el número exacto para revisarlo de inmediato."
             f = matching[0]
         else:
             if not facturas:
-                return f"¡Buenas {nombre}! No tienes facturas pendientes en este momento. 🎉"
+                return f"¡Hola {nombre}! No tienes recibos pendientes en este momento. Tu cuenta está al día. 🎉"
             f = facturas[0]
 
-        # Si el usuario pregunta "por qué subió" o pide desglose, usar la explicación detallada
+        # Si el usuario pregunta "por qué subió" o pide desglose
         if "por qué" in message.lower() or "porque" in message.lower() or "desglose" in message.lower():
             exp_res = await customer_agent.execute({
                 "type": "explain_invoice",
@@ -277,36 +295,34 @@ class WhatsAppWebhookService:
             })
             return exp_res.get("respuesta", "")
 
-        estado = "VENCIDA" if f.fecha_vto and f.fecha_vto < date.today() else "al día"
-        vto = f.fecha_vto.strftime("%d/%m/%Y") if f.fecha_vto else "sin fecha"
-        emision = f.fecha_emision.strftime("%d/%m/%Y") if f.fecha_emision else "s/f"
+        estado = "Vencido" if f.fecha_vto and f.fecha_vto < date.today() else "Vigente"
+        vto = f.fecha_vto.strftime("%d/%m/%Y") if f.fecha_vto else "por confirmar"
+        emision = f.fecha_emision.strftime("%d/%m/%Y") if f.fecha_emision else "reciente"
         
         return (
-            f"Hola {nombre} 👋, aquí el detalle de tu factura *{f.nro_doc_fiscal}*:\n\n"
-            f"• Fecha de Emisión: {emision}\n"
-            f"• Fecha de Vencimiento: {vto}\n"
-            f"• Monto Total: *S/ {float(f.charge_total_amount or 0):,.2f}*\n"
-            f"• Estado: {estado}\n\n"
-            "¿Deseas conocer los métodos de pago disponibles o solicitar facilidades?"
+            f"¡Hola {nombre}! Aquí tienes el detalle de tu recibo *{f.nro_doc_fiscal}*:\n\n"
+            f"• Monto a pagar: *S/ {float(f.charge_total_amount or 0):,.2f}*\n"
+            f"• Fecha de emisión: {emision}\n"
+            f"• Último día de pago: {vto} ({estado})\n\n"
+            "Puedes pagarlo cómodamente por tu banca móvil o Yape. ¿Tienes alguna consulta sobre tus consumos o deseas facilidades de pago?"
         )
 
     async def _reply_oferta(self, cliente: BSSCliente, nombre: str) -> str:
         score = float(cliente.score_confianza or 0.80)
         if score >= 0.80:
-            descuento = 5
-            propuesta = "un descuento del 5% por pronto pago dentro de las próximas 48 horas"
+            propuesta = "un descuento del 5% por pronto pago si regularizas dentro de las próximas 48 horas"
         elif score >= 0.50:
-            descuento = 10
-            propuesta = "un descuento especial del 10% para regularizar tu saldo"
+            propuesta = "un descuento especial del 10% para regularizar tu saldo hoy mismo"
         else:
-            descuento = 15
-            propuesta = "un plan de facilidades: 15% de descuento sobre intereses y fraccionamiento"
+            propuesta = "un plan de facilidades con 15% de descuento sobre recargos y opción de pago fraccionado"
 
-        logger.info("🎯 Oferta predictiva calculada", ruc=cliente.numero_identificacion_fiscal, score=score, descuento=descuento)
+        logger.info("🎯 Oferta personalizada generada", ruc=cliente.numero_identificacion_fiscal)
 
         return (
-            f"Hola {nombre} 🤝, revisando tu historial en SON-IA, podemos ofrecerte {propuesta}.\n\n"
-            "¿Te gustaría confirmar esta opción para registrar tu acuerdo de pago?"
+            f"¡Hola {nombre}! 🤝 Con gusto te ayudamos. Revisando tu cuenta, tenemos una facilidad especial disponible para ti:\n\n"
+            f"👉 *{propuesta}*.\n\n"
+            "Puedes realizar tu pago directo y seguro aquí: https://www.movistar.com.pe/pagos\n\n"
+            "¿Te gustaría que apliquemos esta opción a tu cuenta?"
         )
 
     async def process_payload(self, payload: Dict[str, Any], db: AsyncSession) -> Dict[str, Any]:
