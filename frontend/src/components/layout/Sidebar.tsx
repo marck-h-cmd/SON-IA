@@ -40,6 +40,12 @@ export const Sidebar: React.FC = () => {
       matches: ['/negociacion'],
     },
     {
+      label: 'Aprobaciones HITL',
+      icon: '🛡️',
+      href: '/aprobaciones',
+      matches: ['/aprobaciones'],
+    },
+    {
       label: 'Auditoría',
       icon: '📋',
       href: '/auditoria',

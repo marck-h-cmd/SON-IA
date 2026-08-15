@@ -53,6 +53,8 @@ export interface FacturaDetalle {
   id: string;
   numero_factura: string;
   cliente: ClienteInfo;
+  cod_cuenta?: string;
+  cod_cliente?: string;
   monto_total: number;
   igv: number;
   subtotal: number;
@@ -266,3 +268,31 @@ export interface ComponentStatus {
   response_time_ms: number;
   message?: string;
 }
+
+// ============ HITL TYPES ============
+export interface SolicitudHITL {
+  id: number;
+  solicitud_id: string;
+  tipo_operacion: string;
+  factura_id?: string;
+  numero_identificacion_fiscal: string;
+  cliente_nombre?: string;
+  monto: number;
+  score_confianza: number;
+  agente_origen: string;
+  motivo_retencion: string;
+  estado: "pendiente" | "aprobada" | "rechazada";
+  notas_supervisor?: string;
+  supervisor_responsable?: string;
+  created_at: string;
+  resolved_at?: string;
+}
+
+export interface MetricasHITL {
+  total_pendientes: number;
+  total_aprobadas: number;
+  total_rechazadas: number;
+  monto_total_retenido: number;
+  score_promedio: number;
+}
+

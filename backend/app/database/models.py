@@ -169,3 +169,48 @@ class BSSNotaCredito(Base):
     monto: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 2))
     
     cliente: Mapped["BSSCliente"] = relationship(back_populates="notas_credito")
+
+
+# ============================================
+# NEGOCIACIÓN
+# ============================================
+
+class BSSOfertaNegociacion(Base):
+    __tablename__ = "bss_ofertas_negociacion"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    factura_id: Mapped[str] = mapped_column(String(50), index=True)
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(String(20), index=True)
+    tipo_oferta: Mapped[Optional[str]] = mapped_column(String(50), default="descuento_pronto_pago")
+    descuento_porcentaje: Mapped[Decimal] = mapped_column(Numeric(5, 2), default=0.0)
+    monto_original: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0.0)
+    monto_con_descuento: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0.0)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    fecha_expiracion: Mapped[Optional[date]] = mapped_column(Date)
+    estado: Mapped[str] = mapped_column(String(20), default="pendiente")
+    notas: Mapped[Optional[str]] = mapped_column(String(255))
+
+
+# ============================================
+# HUMAN-IN-THE-LOOP (HITL)
+# ============================================
+
+class BSSRevisionHITL(Base):
+    __tablename__ = "bss_revisiones_hitl"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    solicitud_id: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    tipo_operacion: Mapped[str] = mapped_column(String(50), default="emision_factura")
+    factura_id: Mapped[Optional[str]] = mapped_column(String(50), index=True)
+    numero_identificacion_fiscal: Mapped[str] = mapped_column(String(20), index=True)
+    cliente_nombre: Mapped[Optional[str]] = mapped_column(String(255))
+    monto: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0.0)
+    score_confianza: Mapped[Decimal] = mapped_column(Numeric(5, 2), default=0.80)
+    agente_origen: Mapped[str] = mapped_column(String(50), default="Supervisor Agent")
+    motivo_retencion: Mapped[str] = mapped_column(String(255))
+    estado: Mapped[str] = mapped_column(String(20), default="pendiente")  # pendiente, aprobada, rechazada
+    notas_supervisor: Mapped[Optional[str]] = mapped_column(Text)
+    supervisor_responsable: Mapped[Optional[str]] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
