@@ -39,6 +39,61 @@ export const billingService = {
     const response = await apiClient.post('/billing/ciclos/ejecutar', {}, { params });
     return response.data;
   },
+
+  /**
+   * Obtiene metadatos de facturación electrónica SUNAT UBL 2.1
+   */
+  async getSunatInfo(facturaId: string): Promise<{
+    factura_id: string;
+    tipo_comprobante: string;
+    tipo_nombre: string;
+    serie: string;
+    correlativo: string;
+    hash_sha256: string;
+    qr_cadena: string;
+    estado_sunat: string;
+    xml_filename: string;
+  }> {
+    const response = await apiClient.get(`/billing/facturas/${facturaId}/sunat-info`);
+    return response.data;
+  },
+
+  /**
+   * Descarga archivo XML SUNAT UBL 2.1
+   */
+  async descargarXml(facturaId: string): Promise<Blob> {
+    const response = await apiClient.get(`/billing/facturas/${facturaId}/xml`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  /**
+   * Descarga archivo PDF Oficial Movistar con diseño corporativo
+   */
+  async descargarPdf(facturaId: string): Promise<Blob> {
+    const response = await apiClient.get(`/billing/facturas/${facturaId}/pdf`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  /**
+   * Envía el recibo PDF oficial por correo electrónico
+   */
+  async enviarEmailFactura(
+    facturaId: string,
+    emailDestino?: string
+  ): Promise<{ status: string; mensaje: string; destinatario: string }> {
+    const params = emailDestino ? { email_destino: emailDestino } : {};
+    const response = await apiClient.post(
+      `/billing/facturas/${facturaId}/enviar-email`,
+      {},
+      { params }
+    );
+    return response.data;
+  },
 };
+
 
 export default billingService;

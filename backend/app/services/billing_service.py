@@ -118,6 +118,8 @@ class BillingService:
             "id": factura.nro_doc_fiscal,
             "numero_factura": factura.nro_doc_fiscal,
             "cliente": cliente_info,
+            "cod_cuenta": factura.cod_cuenta or "",
+            "cod_cliente": factura.cod_cliente or "",
             "monto_total": total,
             "igv": igv,
             "subtotal": subtotal,
@@ -135,6 +137,8 @@ class BillingService:
                 }
             ],
             "pagos": [],
+            "pagos_parciales": [],
+            "ofertas": [],
             "ofertas_activas": [],
         }
     
@@ -383,3 +387,7 @@ class BillingService:
     
     async def rechazar_oferta(self, db: AsyncSession, oferta_id: str, razon: Optional[str] = None) -> bool:
         return True
+
+
+# Singleton
+billing_service = BillingService()
