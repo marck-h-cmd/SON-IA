@@ -88,7 +88,25 @@ flowchart LR
 
 ---
 
-## 💻 6. Módulos de la Plataforma SON-IA
+## 🛠️ 6. Stack Tecnológico y Justificación de Arquitectura
+
+Para garantizar **alta velocidad, cero alucinaciones financieras, escalabilidad masiva y una experiencia de usuario institucional**, se seleccionaron las siguientes tecnologías:
+
+| Capa del Sistema | Tecnologías Utilizadas | ¿Por qué se eligió? (Justificación Estratégica) |
+| :--- | :--- | :--- |
+| **🧠 Inteligencia Artificial y Modelos (LLMs)** | **Groq LPU (Llama-3.3-70B / 3.1-8B)**<br>• Google Gemini & OpenAI GPT-4o<br>• LangChain Framework | • **Velocidad Ultra-rápida**: Respuestas en <500ms para atención por WhatsApp en tiempo real.<br>• **Soberanía Multi-modelo**: Evita dependencia exclusiva de un solo proveedor (*vendor lock-in*).<br>• **Especialización**: Modelos de 70B para razonamiento y 8B para clasificación ágil. |
+| **⚙️ Backend & Motor Determinista** | **Python 3.11 + FastAPI**<br>• SQLAlchemy 2.0 Async<br>• Pydantic v2 & Structlog | • **Alto Rendimiento Asíncrono**: Manejo concurrente de miles de peticiones B2B.<br>• **Tipado Estricto**: Validación automática de contratos de datos entre capas.<br>• **Documentación Viva**: Especificación OpenAPI/Swagger nativa. |
+| **📐 Motor Simbólico Financiero** | **Python Decimal & Pandas** | • **Zero-Hallucination**: Cálculos deterministas de IGV (18%), TAMN y prorrateos con precisión de punto fijo, eliminando errores aritméticos de los LLMs. |
+| **🏛️ Cumplimiento Fiscal & Reportes** | **UBL 2.1 (XML), SHA-256 Digest**<br>• ReportLab Engine (PDF) | • **Estándar SUNAT**: Generación oficial de Comprobantes Tipo 14 y Códigos QR tributarios.<br>• **Fidelidad Visual**: Emisión de recibos digitales idénticos a las 3 páginas físicas de Movistar. |
+| **💻 Frontend & Experiencia (UI/UX)** | **Next.js 14 (App Router)**<br>• React 18 & TypeScript 5<br>• Tailwind CSS (Movistar Cyan `#00A9E0`)<br>• Recharts & QrCode SVG Nativo | • **Velocidad y SSR**: Carga instantánea e hidratación optimizada.<br>• **Identidad Corporativa**: Paleta y componentes adaptados a la guía de marca de Movistar.<br>• **Cero Dependencias Frágiles**: Generador QR vectorial autónomo en TypeScript puro. |
+| **🗄️ Persistencia de Datos (BSS/OSS)** | **PostgreSQL 16** (Relacional) | • **Robustez ACID**: Almacenamiento seguro y transaccional de los 6 datasets masivos B2B (clientes, planta fija/móvil, facturas, pagos, notas de crédito). |
+| **⚡ Caché y Procesamiento Masivo** | **Redis 7 + Celery + Flower** | • **Procesamiento Distribuido**: Ejecución asíncrona de ciclos de facturación masiva sin bloquear la API.<br>• **Monitoreo en Vivo**: Control del estado y reintentos de tareas en segundo plano. |
+| **📱 Canales de Integración** | **OpenWA (WhatsApp Gateway)**<br>• Servidor SMTP Corporativo | • **Canal Directo B2B**: Contacto empático e interactivo con el decisor de compra en WhatsApp.<br>• **Seguridad**: Soporte de listas blancas y aislamiento para pruebas y demos. |
+| **🐳 Infraestructura & Despliegue** | **Docker & Docker Compose** | • **Portabilidad Inmediata**: Despliegue de los 6 microservicios en cualquier nube o entorno local con 1 solo comando. |
+
+---
+
+## 💻 7. Módulos de la Plataforma SON-IA
 
 La interfaz web está construida con la **identidad visual oficial de Movistar Empresas** (Cyan Eléctrico `#00A9E0`, fondos suaves y tipografía moderna):
 
@@ -102,7 +120,7 @@ La interfaz web está construida con la **identidad visual oficial de Movistar E
 
 ---
 
-## 📈 7. Impacto de Negocio y Retorno de Inversión (ROI)
+## 📈 8. Impacto de Negocio y Retorno de Inversión (ROI)
 
 ### 📊 Desglose Detallado de Indicadores Clave de Rendimiento (KPIs)
 
@@ -173,6 +191,6 @@ Para medir el éxito de la implementación de **SON-IA** en Movistar Empresas, s
 
 ---
 
-## 🌟 8. Conclusión
+## 🌟 9. Conclusión
 
 **SON-IA** no es solo un asistente conversacional ni un software de facturación tradicional: es un **nuevo paradigma operativo para Movistar Empresas**. Combina la potencia del razonamiento agéntico y la cercanía de la comunicación humanizada con el rigor matemático y la seguridad que exige la gestión financiera corporativa.
