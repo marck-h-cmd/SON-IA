@@ -53,7 +53,7 @@ def _format_friendly_name(raw_name: Optional[str]) -> str:
 def _extract_real_phone(payload: Dict[str, Any], data: Dict[str, Any]) -> Optional[str]:
     """
     Extrae el número de teléfono real del remitente, descartando identificadores internos
-    de WhatsApp Multi-Device (como @lid) y buscando números reales en todos los campos posibles.
+    de WhatsApp Multi-Device (como @lid), IDs de grupo (@g.us) y buscando números reales.
     """
     candidates = []
 
@@ -66,6 +66,7 @@ def _extract_real_phone(payload: Dict[str, Any], data: Dict[str, Any]) -> Option
             sender.get("phoneNumber"),
             sender.get("formattedName"),
             sender.get("wid"),
+            sender.get("phone"),
         ])
     elif isinstance(sender, str):
         candidates.append(sender)
@@ -86,6 +87,7 @@ def _extract_real_phone(payload: Dict[str, Any], data: Dict[str, Any]) -> Option
         candidates.extend([
             _data.get("author"),
             _data.get("participant"),
+            _data.get("from"),
             (_data.get("id") or {}).get("participant") if isinstance(_data.get("id"), dict) else None,
         ])
 
@@ -94,12 +96,15 @@ def _extract_real_phone(payload: Dict[str, Any], data: Dict[str, Any]) -> Option
         data.get("participant"),
         data.get("author"),
         data.get("from"),
-        data.get("chatId"),
     ])
 
-    clean_candidates = [str(c).strip() for c in candidates if c]
+    # Filtrar candidatos no nulos y descartar grupos (@g.us), status, broadcast
+    clean_candidates = [
+        str(c).strip() for c in candidates 
+        if c and "@g.us" not in str(c) and "@broadcast" not in str(c)
+    ]
 
-    # Prioridad A: Candidatos con formato de número @c.us o @s.whatsapp.net (JIDs estándar de WhatsApp)
+    # Prioridad A: Candidatos con formato @c.us o @s.whatsapp.net (JID estándar de usuario)
     for c in clean_candidates:
         if "@c.us" in c or "@s.whatsapp.net" in c:
             num = c.split("@")[0].split(":")[0]
@@ -107,31 +112,41 @@ def _extract_real_phone(payload: Dict[str, Any], data: Dict[str, Any]) -> Option
             if norm and len(norm) == 9 and norm.startswith("9"):
                 return norm
 
-    # Prioridad B: Cualquier candidato que NO sea @lid ni @g.us y tenga número peruano
+    # Prioridad B: Buscar cualquier número peruano de 9 dígitos (o 519XXXXXXXX)
     for c in clean_candidates:
-        if "@lid" in c or "@g.us" in c:
+        if "@lid" in c:
             continue
         num = c.split("@")[0].split(":")[0]
         norm = normalize_phone(num)
         if norm and len(norm) == 9 and norm.startswith("9"):
             return norm
 
-    # Prioridad C: Buscar en el texto de los campos si aparece un celular 9XXXXXXXX
-    for c in clean_candidates:
-        if "@lid" in c:
-            continue
-        m = re.search(r"\b(?:51)?(9\d{8})\b", c)
-        if m:
-            return m.group(1)
+    # Prioridad D: Búsqueda recursiva profunda en todo el payload
+    def _search_nested(obj: Any) -> Optional[str]:
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                res = _search_nested(v)
+                if res:
+                    return res
+        elif isinstance(obj, list):
+            for item in obj:
+                res = _search_nested(item)
+                if res:
+                    return res
+        elif isinstance(obj, (str, int)):
+            s = str(obj)
+            if "@lid" not in s and "@g.us" not in s and "@broadcast" not in s:
+                m = re.search(r"\b(?:51)?(9\d{8})\b", s)
+                if m:
+                    phone_found = m.group(1)
+                    # Descartar si es el número del bot de la sesión actual
+                    if phone_found != "904388543":
+                        return phone_found
+        return None
 
-    # Si todo falla, devolver el primer autor limpiando @xxx solo si no parece un LID largo (>12 dígitos y no empieza con 519)
-    for c in clean_candidates:
-        if "@lid" in c:
-            continue
-        wid = c.split("@")[0].split(":")[0]
-        norm = normalize_phone(wid)
-        if norm:
-            return norm
+    deep_phone = _search_nested(payload)
+    if deep_phone:
+        return deep_phone
 
     return None
 
