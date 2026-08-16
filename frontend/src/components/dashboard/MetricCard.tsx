@@ -21,8 +21,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   variant = 'default',
 }) => {
   const variantClasses = {
-    default: 'border-l-4 border-blue-500',
-    success: 'border-l-4 border-green-500',
+    default: 'border-l-4 border-[#00A9E0]',
+    success: 'border-l-4 border-emerald-500',
     warning: 'border-l-4 border-amber-500',
     danger: 'border-l-4 border-red-500',
   };

@@ -2,16 +2,17 @@
  * Color utilities and status color mappings
  */
 
-// Color palette
+// Color palette Movistar Oficial
 export const colors = {
-  primary: '#2563EB', // Blue
+  primary: '#00A9E0', // Movistar Electric Blue / Cyan
+  primaryHover: '#0084B4', // Movistar Dark Cyan
   secondary: '#6B7280', // Gray
   success: '#10B981', // Green
   warning: '#F59E0B', // Amber
   danger: '#EF4444', // Red
-  info: '#3B82F6', // Light Blue
-  light: '#F3F4F6',
-  dark: '#111827',
+  info: '#00A9E0', // Movistar Cyan
+  light: '#EBF7FC', // Soft Movistar Cyan Tint
+  dark: '#0C4A6E', // Deep Movistar Navy
 };
 
 // Invoice status colors

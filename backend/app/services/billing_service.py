@@ -183,9 +183,9 @@ class BillingService:
                 "razon_social": c.razon_social or c.numero_identificacion_fiscal,
                 "segmento": c.segmento_pais or "B2B",
                 "telefono": c.numero_celular or "999999999",
-                "email": f"contacto@{c.numero_identificacion_fiscal}.com",
+                "email": self._resolver_email(c),
                 "score_confianza": int(float(c.score_confianza or 0.8) * 100),
-                "estado": "activo" if (c.sunat_estado_ruc or "").lower() in ["activo", ""] else "inactivo",
+                "estado": self._determinar_estado(c),
             }
             for c in clientes
         ]
@@ -196,6 +196,40 @@ class BillingService:
             "skip": skip,
             "limit": limit,
         }
+
+    def _resolver_email(self, cliente: BSSCliente) -> str:
+        """Determina el correo electrónico del cliente respetando asignaciones específicas."""
+        phone = (cliente.numero_celular or "").strip()
+        ruc = (cliente.numero_identificacion_fiscal or "").strip()
+        
+        # Mapeo de correos reales y específicos
+        custom_emails = {
+            "901528082": "ajpazro@unitru.edu.pe",
+            "2099999001": "ajpazro@unitru.edu.pe",
+            "904388543": "marckgeo@gmail.com",
+            "2099999002": "marckgeo@gmail.com",
+        }
+        
+        if phone in custom_emails:
+            return custom_emails[phone]
+        if ruc in custom_emails:
+            return custom_emails[ruc]
+        return f"contacto@{ruc}.com"
+
+    def _determinar_estado(self, cliente: BSSCliente) -> str:
+        """Determina si el cliente está ACTIVO según SUNAT (HABIDO / ACTIVO)."""
+        ruc_estado = (cliente.sunat_estado_ruc or "").strip().lower()
+        contrib_estado = (cliente.sunat_estado_contribuyente or "").strip().lower()
+
+        # Si SUNAT marca de baja o suspendido
+        if contrib_estado in ["baja", "inactivo", "suspension", "suspendido"] or ruc_estado in ["baja", "inactivo", "no habido"]:
+            return "inactivo"
+        
+        # Si es HABIDO o ACTIVO (o no especificado en el dataset)
+        if ruc_estado in ["habido", "activo", ""] or contrib_estado in ["activo", "habido", ""]:
+            return "activo"
+            
+        return "activo"
     
     async def get_cliente(
         self,
@@ -230,9 +264,9 @@ class BillingService:
                 "razon_social": cliente.razon_social or cliente.numero_identificacion_fiscal,
                 "segmento": cliente.segmento_pais or "B2B",
                 "telefono": cliente.numero_celular or "999999999",
-                "email": f"contacto@{cliente.numero_identificacion_fiscal}.com",
+                "email": self._resolver_email(cliente),
                 "score_confianza": score_val,
-                "estado": "activo" if (cliente.sunat_estado_ruc or "").lower() in ["activo", ""] else "inactivo",
+                "estado": self._determinar_estado(cliente),
             },
             "score_confianza": score_val,
             "explicacion_score": {

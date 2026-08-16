@@ -162,33 +162,33 @@ export default function AprobacionesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Pendientes de Revisión</p>
-          <p className="text-3xl font-bold text-amber-600 mb-2">
+          <div className="text-3xl font-bold text-amber-600 mb-2">
             {metricas ? metricas.total_pendientes : <Skeleton className="h-8 w-16" />}
-          </p>
+          </div>
           <p className="text-sm text-gray-500">Requieren autorización humana</p>
         </Card>
 
         <Card>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Monto Retenido</p>
-          <p className="text-3xl font-bold text-blue-600 mb-2">
+          <div className="text-3xl font-bold text-blue-600 mb-2">
             {metricas ? formatCurrency(metricas.monto_total_retenido) : <Skeleton className="h-8 w-24" />}
-          </p>
+          </div>
           <p className="text-sm text-gray-500">En solicitudes pendientes</p>
         </Card>
 
         <Card>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Aprobadas</p>
-          <p className="text-3xl font-bold text-green-600 mb-2">
+          <div className="text-3xl font-bold text-green-600 mb-2">
             {metricas ? metricas.total_aprobadas : <Skeleton className="h-8 w-16" />}
-          </p>
+          </div>
           <p className="text-sm text-gray-500">Desbloqueadas por supervisor</p>
         </Card>
 
         <Card>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Rechazadas</p>
-          <p className="text-3xl font-bold text-red-600 mb-2">
+          <div className="text-3xl font-bold text-red-600 mb-2">
             {metricas ? metricas.total_rechazadas : <Skeleton className="h-8 w-16" />}
-          </p>
+          </div>
           <p className="text-sm text-gray-500">Bloqueadas por riesgo</p>
         </Card>
       </div>

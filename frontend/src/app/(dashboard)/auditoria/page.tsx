@@ -27,21 +27,34 @@ export default function AuditPage() {
     tipoAccion: '',
     fechaDesde: '',
     fechaHasta: '',
+    search: '',
   });
+
+  const [searchInput, setSearchInput] = useState('');
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, search: searchInput, skip: 0 }));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const fetchLogs = async () => {
     try {
       setLoading(true);
+      setError(null);
       const result = await auditService.getLogs(
         filters.skip,
         filters.limit,
         filters.tipoAccion || undefined,
         undefined,
         filters.fechaDesde || undefined,
-        filters.fechaHasta || undefined
+        filters.fechaHasta || undefined,
+        filters.search || undefined
       );
-      setLogs(result.items);
-      setTotal(result.total);
+      setLogs(result.items || []);
+      setTotal(result.total || 0);
     } catch (err) {
       console.error('Error fetching audit logs:', err);
       setError('Error cargando registros de auditoría');
@@ -56,12 +69,13 @@ export default function AuditPage() {
         filters.tipoAccion || undefined,
         undefined,
         filters.fechaDesde || undefined,
-        filters.fechaHasta || undefined
+        filters.fechaHasta || undefined,
+        filters.search || undefined
       );
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `auditoria_${new Date().toISOString().split('T')[0]}.csv`;
+      a.download = `auditoria_movistar_${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -72,17 +86,30 @@ export default function AuditPage() {
     }
   };
 
+  // Trigger fetchLogs whenever any filter changes
   useEffect(() => {
     fetchLogs();
-  }, [filters.skip, filters.limit]);
+  }, [filters.skip, filters.limit, filters.tipoAccion, filters.fechaDesde, filters.fechaHasta, filters.search]);
 
   const handleFilterChange = (newFilters: Partial<typeof filters>) => {
-    setFilters({ ...filters, ...newFilters, skip: 0 });
+    setFilters((prev) => ({ ...prev, ...newFilters, skip: 0 }));
+  };
+
+  const handleResetFilters = () => {
+    setSearchInput('');
+    setFilters({
+      skip: 0,
+      limit: 10,
+      tipoAccion: '',
+      fechaDesde: '',
+      fechaHasta: '',
+      search: '',
+    });
   };
 
   const handlePrevPage = () => {
     if (filters.skip > 0) {
-      setFilters({ ...filters, skip: filters.skip - filters.limit });
+      setFilters({ ...filters, skip: Math.max(0, filters.skip - filters.limit) });
     }
   };
 
@@ -96,7 +123,17 @@ export default function AuditPage() {
     return resultado === 'exitoso' ? 'success' : 'danger';
   };
 
-  const commonActionTypes = ['crear', 'actualizar', 'eliminar', 'ver', 'descargar', 'registrar_pago', 'aceptar_oferta'];
+  const actionOptions = [
+    { value: '', label: 'Todas las acciones' },
+    { value: 'ejecutar_facturacion', label: '📄 Facturación B2B (Emisión)' },
+    { value: 'calcular_tamn', label: '💰 Intereses TAMN (Cobranzas)' },
+    { value: 'generar_oferta', label: '🤝 Ofertas de Negociación' },
+    { value: 'enviar_email', label: '✉️ Envío de Recibo Oficial PDF' },
+    { value: 'notificacion_pago', label: '📱 WhatsApp Gateway (OpenWA)' },
+    { value: 'aprobar_solicitud', label: '🛡️ Aprobación HITL' },
+    { value: 'rechazar_solicitud', label: '🚫 Rechazo HITL' },
+    { value: 'analisis_metricas', label: '🔍 Supervisión de Agentes' },
+  ];
 
   return (
     <div className="space-y-8">
@@ -108,24 +145,24 @@ export default function AuditPage() {
       />
 
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Auditoría</h1>
-        <p className="text-gray-600 dark:text-gray-400">Registro de acciones y rastrabilidad del sistema</p>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Auditoría y Trazabilidad</h1>
+        <p className="text-gray-600 dark:text-gray-400">Registro inmutable de acciones ejecutadas por agentes de IA y supervisores humanos</p>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total de Registros</p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">{total}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total de Registros Encontrados</p>
+          <div className="text-3xl font-bold text-sky-600 dark:text-sky-400">{total}</div>
         </Card>
         <Card>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Período</p>
-          <p className="text-sm font-semibold">Últimos 90 días</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Período de Retención</p>
+          <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-2">Últimos 90 días (Regulatorio SUNAT / Osiptel)</div>
         </Card>
         <Card>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Acción Rápida</p>
-          <Button variant="primary" size="sm" onClick={handleExportLogs} className="w-full">
-            📊 Exportar a Excel
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Exportar Reporte</p>
+          <Button variant="primary" size="sm" onClick={handleExportLogs} className="w-full mt-1 bg-[#00A9E0] hover:bg-[#0084B4]">
+            📊 Descargar CSV Auditoría
           </Button>
         </Card>
       </div>
@@ -133,40 +170,74 @@ export default function AuditPage() {
       {/* Filters */}
       <Card>
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Filtros</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <span>🔍</span> Filtros de Auditoría
+            </h2>
+            {(filters.tipoAccion || filters.fechaDesde || filters.fechaHasta || searchInput) && (
+              <span className="text-xs font-semibold px-2 py-1 bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 rounded-full">
+                Filtros activos
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Search Input */}
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                Búsqueda Rápida
+              </label>
+              <input
+                type="text"
+                placeholder="Buscar por usuario, ID, entidad, factura..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-[#00A9E0] focus:outline-none"
+              />
+            </div>
+
+            {/* Action Type Dropdown */}
             <div>
-              <label className="block text-sm font-medium mb-2">Tipo de Acción</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                Tipo de Acción
+              </label>
               <select
                 value={filters.tipoAccion}
                 onChange={(e) => handleFilterChange({ tipoAccion: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-[#00A9E0] focus:outline-none"
               >
-                <option value="">Todas</option>
-                {commonActionTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                {actionOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
                   </option>
                 ))}
               </select>
             </div>
+
+            {/* Fecha Desde */}
             <Input
               type="date"
               label="Desde"
               value={filters.fechaDesde}
               onChange={(e) => handleFilterChange({ fechaDesde: e.target.value })}
             />
+
+            {/* Fecha Hasta */}
             <Input
               type="date"
               label="Hasta"
               value={filters.fechaHasta}
               onChange={(e) => handleFilterChange({ fechaHasta: e.target.value })}
             />
-            <div className="flex items-end">
-              <Button variant="secondary" className="w-full" onClick={() => handleFilterChange({ tipoAccion: '', fechaDesde: '', fechaHasta: '' })}>
-                Limpiar
-              </Button>
-            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleResetFilters}
+            >
+              🔄 Limpiar Filtros
+            </Button>
           </div>
         </div>
       </Card>

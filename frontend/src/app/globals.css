@@ -134,23 +134,45 @@ textarea:focus {
   }
 }
 
+/* Movistar Corporate Design Styles */
+.movistar-header-pill {
+  background-color: #00A9E0;
+  color: #ffffff;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.65rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 169, 224, 0.25);
+}
+
+.movistar-card-accent {
+  background-color: #ebf7fc;
+  border: 1px solid #bae6fd;
+  border-radius: 1rem;
+}
+
+html.dark .movistar-card-accent {
+  background-color: rgba(12, 74, 110, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
 /* Glass Panel */
 .glass-panel {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 169, 224, 0.15);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-panel:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px 0 rgba(0, 169, 224, 0.25);
+  border-color: rgba(0, 169, 224, 0.3);
 }
 
-/* Text Gradient */
+/* Text Gradient Movistar */
 .text-gradient {
-  background: linear-gradient(to right, #60a5fa, #a78bfa);
+  background: linear-gradient(135deg, #00A9E0 0%, #0284c7 50%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

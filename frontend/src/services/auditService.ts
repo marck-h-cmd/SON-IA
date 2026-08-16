@@ -15,13 +15,15 @@ export const auditService = {
     tipoAccion?: string,
     usuarioId?: string,
     fechaDesde?: string,
-    fechaHasta?: string
+    fechaHasta?: string,
+    search?: string
   ): Promise<ListPaginada<LogAuditoria>> {
     const params: Record<string, unknown> = { skip, limit };
     if (tipoAccion) params.tipo_accion = tipoAccion;
     if (usuarioId) params.usuario_id = usuarioId;
     if (fechaDesde) params.fecha_desde = fechaDesde;
     if (fechaHasta) params.fecha_hasta = fechaHasta;
+    if (search) params.search = search;
     const response = await apiClient.get('/audit/logs', { params });
     return response.data;
   },
@@ -41,13 +43,15 @@ export const auditService = {
     tipoAccion?: string,
     usuarioId?: string,
     fechaDesde?: string,
-    fechaHasta?: string
+    fechaHasta?: string,
+    search?: string
   ): Promise<Blob> {
     const params: Record<string, unknown> = {};
     if (tipoAccion) params.tipo_accion = tipoAccion;
     if (usuarioId) params.usuario_id = usuarioId;
     if (fechaDesde) params.fecha_desde = fechaDesde;
     if (fechaHasta) params.fecha_hasta = fechaHasta;
+    if (search) params.search = search;
     const response = await apiClient.get('/audit/logs/export', {
       params,
       responseType: 'blob',

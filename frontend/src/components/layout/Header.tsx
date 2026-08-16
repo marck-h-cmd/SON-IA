@@ -31,7 +31,7 @@ export const Header: React.FC = () => {
             <input
               type="search"
               placeholder="Buscar facturas, clientes..."
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A9E0] w-48 text-sm"
             />
           </div>
 
@@ -53,11 +53,11 @@ export const Header: React.FC = () => {
           {/* User Menu */}
           <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-700">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Admin User</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Administrador</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Admin Movistar</p>
+              <p className="text-xs text-sky-600 dark:text-sky-400 font-semibold">Integratel B2B</p>
             </div>
-            <button className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors">
-              A
+            <button className="w-8 h-8 rounded-full bg-[#00A9E0] text-white font-bold hover:bg-[#0084B4] transition-colors shadow-sm flex items-center justify-center text-sm">
+              M
             </button>
           </div>
         </div>

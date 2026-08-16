@@ -266,7 +266,7 @@ async def enviar_factura_por_email(
     pdf_bytes = pdf_generator.generar_pdf_recibo(factura, cliente)
 
     # Determinar destinatario
-    to_email = email_destino or f"pagos@{cliente.numero_identificacion_fiscal}.com"
+    to_email = email_destino or billing_service._resolver_email(cliente)
     mes_nombre = (factura.fecha_emision or date.today()).strftime("%B")
     meses_es = {
         "January": "Enero", "February": "Febrero", "March": "Marzo", "April": "Abril",

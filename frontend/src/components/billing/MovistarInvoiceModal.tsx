@@ -14,6 +14,7 @@ interface MovistarInvoiceModalProps {
   downloadingPdf?: boolean;
   onSendEmail?: (emailDestino?: string) => Promise<void>;
   sendingEmail?: boolean;
+  onViewQr?: () => void;
 }
 
 export const MovistarInvoiceModal: React.FC<MovistarInvoiceModalProps> = ({
@@ -25,6 +26,7 @@ export const MovistarInvoiceModal: React.FC<MovistarInvoiceModalProps> = ({
   downloadingPdf = false,
   onSendEmail,
   sendingEmail = false,
+  onViewQr,
 }) => {
   const [activeTab, setActiveTab] = useState<'p1' | 'p2' | 'p3'>('p1');
   const [showEmailPrompt, setShowEmailPrompt] = useState(false);
@@ -115,6 +117,11 @@ export const MovistarInvoiceModal: React.FC<MovistarInvoiceModalProps> = ({
             {onDownloadPdf && (
               <Button size="sm" variant="primary" onClick={onDownloadPdf} loading={downloadingPdf}>
                 📥 Descargar PDF
+              </Button>
+            )}
+            {onViewQr && (
+              <Button size="sm" variant="secondary" onClick={onViewQr} className="text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800">
+                📱 Ver QR
               </Button>
             )}
             {onDownloadXml && (

@@ -11,6 +11,7 @@ import Modal from '@/components/ui/Modal';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import Skeleton from '@/components/ui/Skeleton';
 import MovistarInvoiceModal from '@/components/billing/MovistarInvoiceModal';
+import SunatQrModal from '@/components/billing/SunatQrModal';
 import { billingService } from '@/services/billingService';
 import { formatCurrency, formatDate } from '@/utils/formatting';
 import { exportToCsv } from '@/utils/exportToExcel';
@@ -23,6 +24,7 @@ export default function BillingPage() {
   const [selectedFactura, setSelectedFactura] = useState<FacturaDetalle | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showMovistarModal, setShowMovistarModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
@@ -440,9 +442,10 @@ export default function BillingPage() {
                 <Button
                   size="sm"
                   variant="secondary"
-                  onClick={() => alert(`Cadena QR SUNAT:\n20601234567|14|${selectedFactura.numero_factura}|${selectedFactura.igv}|${selectedFactura.monto_total}`)}
+                  onClick={() => setShowQrModal(true)}
+                  className="flex items-center gap-1 hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800"
                 >
-                  🔍 Ver Código QR
+                  📱 Ver Código QR SUNAT
                 </Button>
               </div>
             </div>
@@ -457,6 +460,7 @@ export default function BillingPage() {
         isOpen={showMovistarModal}
         onClose={() => setShowMovistarModal(false)}
         factura={selectedFactura}
+        onViewQr={() => setShowQrModal(true)}
         onSendEmail={async (emailDestino) => {
           if (!selectedFactura) return;
           try {
@@ -567,6 +571,13 @@ export default function BillingPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Modal: Visor de Código QR y Validación Electrónica SUNAT */}
+      <SunatQrModal
+        isOpen={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        factura={selectedFactura}
+      />
     </div>
   );
 }

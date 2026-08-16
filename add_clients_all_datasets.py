@@ -8,19 +8,22 @@ new_clients = [
         'COD_CLIENTE': '1000001',
         'NUMERO_IDENTIFICACION_FISCAL': '2099999001',
         'RAZON_SOCIAL': 'CLIENT_01001',
-        'NUMERO_CELULAR': '901528082'
+        'NUMERO_CELULAR': '901528082',
+        'EMAIL': 'ajpazro@unitru.edu.pe',
     },
     {
         'COD_CLIENTE': '1000002',
         'NUMERO_IDENTIFICACION_FISCAL': '2099999002',
         'RAZON_SOCIAL': 'CLIENT_01002',
-        'NUMERO_CELULAR': '904388543'
+        'NUMERO_CELULAR': '904388543',
+        'EMAIL': 'marckgeo@gmail.com',
     },
     {
         'COD_CLIENTE': '1000003',
         'NUMERO_IDENTIFICACION_FISCAL': '2099999003',
         'RAZON_SOCIAL': 'CLIENT_01003',
-        'NUMERO_CELULAR': '937239826'
+        'NUMERO_CELULAR': '937239826',
+        'EMAIL': 'contacto@2099999003.com',
     }
 ]
 
