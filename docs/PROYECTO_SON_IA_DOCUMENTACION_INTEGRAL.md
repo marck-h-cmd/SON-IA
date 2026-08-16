@@ -104,23 +104,70 @@ La interfaz web está construida con la **identidad visual oficial de Movistar E
 
 ## 📈 7. Impacto de Negocio y Retorno de Inversión (ROI)
 
-### 📊 Indicadores Clave de Rendimiento (KPIs)
+### 📊 Desglose Detallado de Indicadores Clave de Rendimiento (KPIs)
 
-| Métrica / KPI | Situación Tradicional | Con SON-IA (Proyección) | Beneficio Estratégico |
-| :--- | :--- | :--- | :--- |
-| **DSO (Días de Cobro)** | 45 días | **40 días** | **-11%** (Aceleración de liquidez y flujo de caja) |
-| **Exactitud de Facturación** | Sujeta a errores manuales | **99.9%** | Eliminación de quejas y refacturaciones |
-| **Recuperación de Cartera** | Cobranza reactiva agresiva | **+15% a +20%** | Mayor recupero antes de caer en mora tardía |
-| **Carga Operativa Manual** | Alta demanda de personal | **-80% de horas operativas** | Enfoque del equipo en cuentas estratégicas |
-| **Satisfacción del Cliente B2B** | Fricción por cobranza dura | **Experiencia empática** | Fidelización y reducción de bajas (*churn*) |
+Para medir el éxito de la implementación de **SON-IA** en Movistar Empresas, se han establecido metas cuantitativas organizadas en **4 dimensiones estratégicas**:
 
-### 💰 Proyección de Retorno Financiero
+#### 1. 💵 Dimensión Financiera & Liquidez
+* **DSO (Days Sales Outstanding / Días de Cobro)**:
+  * *Línea Base*: 45 días promedio en cartera B2B.
+  * *Meta con SON-IA*: **40 días (-11% de reducción)**.
+  * *Impacto*: Aceleración del flujo de caja operativo, reduciendo costos financieros por líneas de crédito de capital de trabajo.
+* **Tasa de Recuperación Temprana de Cartera**:
+  * *Línea Base*: Cobranza reactiva que inicia a 30+ días de mora con baja efectividad inicial.
+  * *Meta con SON-IA*: **Incremento del +15% al +20%** en recaudación antes del vencimiento (fase predictiva T-5 días).
+  * *Impacto*: Evita la acumulación de intereses moratorios TAMN desmedidos y previene el pase a cobranza judicial o castigo de deuda.
+* **Eliminación de Fuga de Ingresos (Revenue Leakage)**:
+  * *Meta con SON-IA*: **95% de reducción** en servicios no facturados o inconsistencias en tarifas de planta fija y móvil gracias a la auditoría del *Billing Agent*.
+
+---
+
+#### 2. 🎯 Dimensión de Precisión Financiera & Cumplimiento (Compliance)
+* **Exactitud en la Facturación (Zero-Hallucination)**:
+  * *Línea Base*: Errores manuales en prorrateos, cálculos de IGV (18%) y descuentos.
+  * *Meta con SON-IA*: **99.9% de exactitud matemática determinista**.
+  * *Impacto*: Erradicación casi total de Notas de Crédito por refacturación o disputas comerciales.
+* **Trazabilidad y Cobertura Regulatoria SUNAT**:
+  * *Meta con SON-IA*: **100% de comprobantes generados bajo estándar UBL 2.1**, con código Hash SHA-256 (`DigestValue`), código QR oficial y bitácora de auditoría inmutable.
+* **Efectividad del Control Humano (HITL - Human-in-the-Loop)**:
+  * *Meta con SON-IA*: **100% de casos con score < 0.80 o descuentos > 15% retenidos preventivamente**, garantizando que ninguna operación fuera de política se emita sin autorización ejecutiva.
+
+---
+
+#### 3. ⚡ Dimensión de Eficiencia Operativa & Productividad
+* **Optimización y Reasignación de Esfuerzo (FTEs)**:
+  * *Línea Base*: 30 colaboradores dedicados a tareas manuales de validación, liquidación de TAMN y llamadas de cobranza fría.
+  * *Meta con SON-IA*: **Reducción del 80% en carga operativa manual** (el equipo se reduce a 6 supervisores dedicados a cuentas estratégicas y control de calidad).
+* **Tiempo de Ciclo de Emisión Masiva**:
+  * *Línea Base*: 48 a 72 horas para procesar, cuadrar y emitir el ciclo completo de facturación.
+  * *Meta con SON-IA*: **Menos de 15 minutos** mediante el procesamiento distribuido en segundo plano con Celery y FastAPI.
+
+---
+
+#### 4. 🤝 Dimensión de Experiencia de Cliente & Retención (CX & Churn)
+* **Resolución en Primer Contacto (FCR Digital)**:
+  * *Meta con SON-IA*: **+30% de aumento en resolución inmediata** de dudas sobre recibos, desglose de consumo y lugares de pago a través del canal de WhatsApp.
+* **Reducción del Churn Involuntario (Bajas por Morosidad)**:
+  * *Línea Base*: ~5% anual de clientes corporativos con corte de servicio por falta de facilidades de pago oportunas.
+  * *Meta con SON-IA*: **Reducción a menos del 1.5% anual**, preservando la relación comercial y el ingreso recurrente (*MRR*).
+
+---
+
+### 💰 Modelo de Retorno Financiero y Análisis de Inversión (ROI)
+
+| Concepto de Valor | Ahorro / Beneficio Anual Proyectado |
+| :--- | :--- |
+| **Ahorro en Costos Operativos y Horas Extra** (Optimización de FTEs) | S/ 4,200,000 |
+| **Recupero Adicional de Cartera y Reducción de Mora** | S/ 5,800,000 |
+| **Erradicación de Fuga de Ingresos y Disputas de Facturación** | S/ 1,100,000 |
+| **BENEFICIO TOTAL ANUAL ESTIMADO** | **S/ 11,100,000** |
+| **Costo Total de Implementación y Plataforma (Año 1)** | **S/ 1,800,000** |
 
 ```text
 ┌────────────────────────────────────────────────────────┐
-│  • Ahorro y Recupero Estimado Anual:  S/ 11,100,000    │
-│  • Retorno de Inversión (ROI Año 1):  516%             │
-│  • Período de Recupero (Payback):     < 3 meses        │
+│  • Retorno sobre la Inversión (ROI Año 1):   516%      │
+│  • Beneficio Neto Primer Año:                S/ 9.3M   │
+│  • Período de Recupero de Inversión (Payback): < 3 meses │
 └────────────────────────────────────────────────────────┘
 ```
 
