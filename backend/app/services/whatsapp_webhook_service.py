@@ -251,6 +251,22 @@ class WhatsAppWebhookService:
                     logger.info("👤 Cliente identificado por RUC en texto", ruc=extracted_ruc,
                                 nombre=cliente.razon_social)
 
+        # 4. Fallback de Demo Sandbox: Si está configurado WHATSAPP_DEMO_ALLOWED_PHONE,
+        # cargar el cliente de prueba configurado para asegurar 100% de consistencia
+        if not cliente:
+            allowed_demo = (getattr(settings, "WHATSAPP_DEMO_ALLOWED_PHONE", "") or "").strip()
+            if allowed_demo:
+                allowed_phones = [normalize_phone(n) for n in allowed_demo.split(",") if n.strip() and "@g.us" not in n]
+                if allowed_phones:
+                    demo_phone = allowed_phones[0]
+                    result = await db.execute(
+                        select(BSSCliente).where(BSSCliente.numero_celular.like(f"%{demo_phone}"))
+                    )
+                    cliente = result.scalars().first()
+                    if cliente:
+                        logger.info("👤 Cliente demo asignado por configuración sandbox", phone=demo_phone,
+                                    ruc=cliente.numero_identificacion_fiscal, nombre=cliente.razon_social)
+
         if cliente:
             logger.info("👤 Cliente final identificado", ruc=cliente.numero_identificacion_fiscal,
                         nombre=cliente.razon_social)
