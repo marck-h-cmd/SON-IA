@@ -9,16 +9,16 @@ Desafío:
 Automatización Inteligente y Eficiencia en Procesos de Facturación, Recaudación y Cobranzas B2B.
 
 Problema identificado:
-En telecomunicaciones corporativas, la cobranza es reactiva e inicia a los 30+ días de mora con acumulación de intereses TAMN, elevando el DSO a 45 días y el riesgo de incobrabilidad. Los procesos de facturación son manuales, lentos (48h por ciclo) y fragmentados en múltiples sistemas, provocando fuga de ingresos (~3-5% anual) y comunicaciones frías con tecnicismos complejos que confunden a clientes no especializados o adultos mayores.
+En telecomunicaciones corporativas, la cobranza reactiva inicia a 30+ días de mora con acumulación de intereses TAMN, elevando el DSO a 45 días. La facturación manual es lenta (48h/ciclo) y fragmentada, generando fuga de ingresos (~3-5%) y comunicaciones frías con tecnicismos que confunden a clientes y adultos mayores.
 
 4. Innovación:
-Opera mediante 7 agentes virtuales especializados que colaboran como un equipo humano: revisan consumos, liquidan intereses, diseñan facilidades de pago y atienden por WhatsApp con un lenguaje cotidiano, cálido y sencillo que cualquier usuario o adulto mayor comprende sin tecnicismos. Su gran diferencial es el principio "Zero-Hallucination": la IA dialoga de forma clara y humana, mientras un motor matemático exacto procesa los números con supervisión humana (HITL).
+Opera con 7 agentes virtuales que colaboran en equipo: auditan consumos, liquidan intereses, diseñan facilidades de pago y atienden por WhatsApp con lenguaje cotidiano y cálido sin tecnicismos. Su gran valor es el principio "Zero-Hallucination": la IA dialoga de forma humana, mientras un motor matemático exacto procesa los números bajo supervisión humana (HITL).
 
 5. Viabilidad:
-Es altamente viable porque se integra sobre la infraestructura existente (BSS/OSS y bases de datos relacionales) sin requerir reemplazo de sistemas legados. Utiliza estándares abiertos (FastAPI, Next.js, PostgreSQL, Docker) y modelos de inferencia ultra-rápida de bajo costo (Groq/Gemini). Sus aliados clave son las áreas de Finanzas, Facturación, TI y Operaciones de Movistar Empresas.
+Altamente viable al integrarse sobre la infraestructura existente (BSS/OSS y bases de datos) sin sustituir sistemas legados. Emplea estándares abiertos (FastAPI, Next.js, PostgreSQL, Docker) e inferencia ultra-rápida (Groq/Gemini), con respaldo directo de las áreas de Finanzas, Facturación y TI de Movistar.
 
 6. Potencial de impacto:
-Beneficia a más de 10,000 empresas y personas usuarias, promoviendo la inclusión digital de adultos mayores y negocios familiares con explicaciones transparentes de sus recibos. Indicadores proyectados: reducción del DSO en -11% (de 45 a 40 días), aceleración de ciclos de emisión (-85%), reducción del 80% en carga operativa manual (ahorro de 24 FTEs), recupero temprano de cartera (+15-20%) y un beneficio neto anual estimado en S/ 9.3 millones con un ROI del 516% (payback < 3 meses).
+Beneficia a +10,000 empresas y usuarios, impulsando la inclusión digital de adultos mayores. Impacto: reducción del DSO en -11% (de 45 a 40 días), emisión 85% más rápida, ahorro del 80% en carga operativa (24 FTEs), recupero de cartera (+15-20%) y beneficio neto anual de S/ 9.3M con ROI de 516% (payback < 3 meses).
 
 7. Explica de qué manera tu propuesta utiliza inteligencia artificial para abordar el problema identificado:
-Integra IA Generativa (Llama-3.3-70B vía Groq y Gemini) en un enjambre multi-agente. La IA predice la propensión de pago, redacta facilidades personalizadas y mantiene conversaciones empáticas por WhatsApp adaptando el lenguaje para que sea paciente y fácil de entender por cualquier usuario, eliminando menús robóticos y tecnicismos. Supera a soluciones tradicionales al combinar negociación predictiva con una atención humanizada que genera confianza y acuerdos sin fricción.
+Integra IA Generativa (Llama-3.3-70B vía Groq y Gemini) en un enjambre multi-agente. La IA predice la propensión de pago, redacta facilidades personalizadas y atiende por WhatsApp con lenguaje paciente y claro para cualquier usuario, sin menús robóticos. Supera a soluciones tradicionales al reemplazar cobros agresivos por negociación predictiva y empática.
