@@ -24,11 +24,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.classifier_agent import classifier_agent
 from app.agents.customer_agent import customer_agent
+from app.config.settings import get_settings
 from app.database.models import BSSCliente, BSSFactura, BSSPago
 from app.integrations.openwa_client import openwa_client, normalize_phone
 from app.integrations.openwa_client import to_chat_id  # noqa: F401
 
 logger = structlog.get_logger(__name__)
+settings = get_settings()
 
 
 def _format_friendly_name(raw_name: Optional[str]) -> str:
