@@ -50,6 +50,92 @@ def _format_friendly_name(raw_name: Optional[str]) -> str:
     return words[0]
 
 
+def _extract_real_phone(payload: Dict[str, Any], data: Dict[str, Any]) -> Optional[str]:
+    """
+    Extrae el número de teléfono real del remitente, descartando identificadores internos
+    de WhatsApp Multi-Device (como @lid) y buscando números reales en todos los campos posibles.
+    """
+    candidates = []
+
+    # 1. Explorar sender
+    sender = data.get("sender") or payload.get("sender") or {}
+    if isinstance(sender, dict):
+        candidates.extend([
+            sender.get("id"),
+            sender.get("number"),
+            sender.get("phoneNumber"),
+            sender.get("formattedName"),
+            sender.get("wid"),
+        ])
+    elif isinstance(sender, str):
+        candidates.append(sender)
+
+    # 2. Explorar key y _data
+    key = data.get("key") or payload.get("key") or {}
+    if isinstance(key, dict):
+        candidates.extend([
+            key.get("participant"),
+            key.get("remoteJid"),
+        ])
+
+    _data = data.get("_data") or {}
+    if isinstance(_data, dict):
+        _sender = _data.get("sender") or {}
+        if isinstance(_sender, dict):
+            candidates.extend([_sender.get("id"), _sender.get("number")])
+        candidates.extend([
+            _data.get("author"),
+            _data.get("participant"),
+            (_data.get("id") or {}).get("participant") if isinstance(_data.get("id"), dict) else None,
+        ])
+
+    # 3. Campos directos en data
+    candidates.extend([
+        data.get("participant"),
+        data.get("author"),
+        data.get("from"),
+        data.get("chatId"),
+    ])
+
+    clean_candidates = [str(c).strip() for c in candidates if c]
+
+    # Prioridad A: Candidatos con formato de número @c.us o @s.whatsapp.net (JIDs estándar de WhatsApp)
+    for c in clean_candidates:
+        if "@c.us" in c or "@s.whatsapp.net" in c:
+            num = c.split("@")[0].split(":")[0]
+            norm = normalize_phone(num)
+            if norm and len(norm) == 9 and norm.startswith("9"):
+                return norm
+
+    # Prioridad B: Cualquier candidato que NO sea @lid ni @g.us y tenga número peruano
+    for c in clean_candidates:
+        if "@lid" in c or "@g.us" in c:
+            continue
+        num = c.split("@")[0].split(":")[0]
+        norm = normalize_phone(num)
+        if norm and len(norm) == 9 and norm.startswith("9"):
+            return norm
+
+    # Prioridad C: Buscar en el texto de los campos si aparece un celular 9XXXXXXXX
+    for c in clean_candidates:
+        if "@lid" in c:
+            continue
+        m = re.search(r"\b(?:51)?(9\d{8})\b", c)
+        if m:
+            return m.group(1)
+
+    # Si todo falla, devolver el primer autor limpiando @xxx solo si no parece un LID largo (>12 dígitos y no empieza con 519)
+    for c in clean_candidates:
+        if "@lid" in c:
+            continue
+        wid = c.split("@")[0].split(":")[0]
+        norm = normalize_phone(wid)
+        if norm:
+            return norm
+
+    return None
+
+
 class WhatsAppWebhookService:
     """Procesa mensajes entrantes de WhatsApp y responde automáticamente con datos y RAG."""
 
@@ -90,21 +176,8 @@ class WhatsAppWebhookService:
 
         is_group = "@g.us" in chat_id_str or bool(data.get("isGroupMsg") or data.get("isGroup"))
 
-        # Determinar el autor del mensaje (si es grupo, buscar quién escribió)
-        author_wid = (
-            data.get("author")
-            or data.get("participant")
-            or ((data.get("key") or {}).get("participant") if isinstance(data.get("key"), dict) else None)
-            or data.get("from")
-        )
-
-        phone = None
-        if author_wid:
-            wid = str(author_wid).split("@")[0]
-            phone = normalize_phone(wid)
-        elif chat_id_str and not is_group:
-            wid = str(chat_id_str).split("@")[0]
-            phone = normalize_phone(wid)
+        # Extraer el teléfono real del remitente
+        phone = _extract_real_phone(payload, data)
 
         target_chat = chat_id_str if is_group else (phone or chat_id_str)
 
