@@ -1,24 +1,24 @@
 1. Nombre del proyecto:
-SON-IA: Sinergia Operativa del Negocio con Inteligencia Artificial Agéntica para Movistar Empresas
+SON-IA: Inteligencia Artificial Agéntica para Movistar Empresas
 
 2. Descripción de la propuesta:
-SON-IA es un ecosistema multi-agente que automatiza la facturación B2B, predice pagos y negocia acuerdos con atención empática por WhatsApp, comprensible para adultos mayores y cualquier usuario, garantizando cero alucinaciones financieras.
+Ecosistema multi-agente que automatiza la facturación B2B, predice pagos y negocia acuerdos por WhatsApp con atención empática y cero alucinaciones financieras.
 
 3. Desafío y problema identificado:
 Desafío:
-Automatización Inteligente y Eficiencia en Procesos de Facturación, Recaudación y Cobranzas B2B.
+Automatización Inteligente en Facturación y Cobranzas B2B.
 
 Problema identificado:
-En telecomunicaciones corporativas, la cobranza reactiva inicia a 30+ días de mora con acumulación de intereses TAMN, elevando el DSO a 45 días. La facturación manual es lenta (48h/ciclo) y fragmentada, generando fuga de ingresos (~3-5%) y comunicaciones frías con tecnicismos que confunden a clientes y adultos mayores.
+La cobranza reactiva inicia a 30+ días de mora con intereses TAMN, elevando el DSO a 45 días. La facturación manual lenta (48h) causa fuga de ingresos (~3-5%) y tecnicismos que confunden a clientes y adultos mayores.
 
 4. Innovación:
-Opera con 7 agentes virtuales que colaboran en equipo: auditan consumos, liquidan intereses, diseñan facilidades de pago y atienden por WhatsApp con lenguaje cotidiano y cálido sin tecnicismos. Su gran valor es el principio "Zero-Hallucination": la IA dialoga de forma humana, mientras un motor matemático exacto procesa los números bajo supervisión humana (HITL).
+7 agentes virtuales colaboran en equipo: auditan consumos, liquidan intereses y atienden por WhatsApp con lenguaje cálido y sencillo. Su pilar "Zero-Hallucination" combina razonamiento de IA con cálculos matemáticos exactos y supervisión humana (HITL).
 
 5. Viabilidad:
-Altamente viable al integrarse sobre la infraestructura existente (BSS/OSS y bases de datos) sin sustituir sistemas legados. Emplea estándares abiertos (FastAPI, Next.js, PostgreSQL, Docker) e inferencia ultra-rápida (Groq/Gemini), con respaldo directo de las áreas de Finanzas, Facturación y TI de Movistar.
+Se integra sobre la infraestructura existente (BSS/OSS y bases de datos) sin sustituir sistemas legados. Usa estándares abiertos (FastAPI, Next.js, PostgreSQL) e inferencia ágil (Groq/Gemini), con respaldo de Finanzas y TI de Movistar.
 
 6. Potencial de impacto:
-Beneficia a +10,000 empresas y usuarios, impulsando la inclusión digital de adultos mayores. Impacto: reducción del DSO en -11% (de 45 a 40 días), emisión 85% más rápida, ahorro del 80% en carga operativa (24 FTEs), recupero de cartera (+15-20%) y beneficio neto anual de S/ 9.3M con ROI de 516% (payback < 3 meses).
+Beneficia a +10,000 clientes: reduce DSO a 40 días (-11%), emite 85% más rápido, ahorra 80% en carga operativa (24 FTEs), eleva recupero (+20%) y genera S/ 9.3M netos anuales (ROI 516%, payback <3 meses).
 
 7. Explica de qué manera tu propuesta utiliza inteligencia artificial para abordar el problema identificado:
-Integra IA Generativa (Llama-3.3-70B vía Groq y Gemini) en un enjambre multi-agente. La IA predice la propensión de pago, redacta facilidades personalizadas y atiende por WhatsApp con lenguaje paciente y claro para cualquier usuario, sin menús robóticos. Supera a soluciones tradicionales al reemplazar cobros agresivos por negociación predictiva y empática.
+Emplea IA Generativa (Llama-3/Gemini) en enjambre. Predice propensión de pago, genera facilidades personalizadas y atiende por WhatsApp con lenguaje humano y paciente, reemplazando cobros agresivos por negociación predictiva y empática.
