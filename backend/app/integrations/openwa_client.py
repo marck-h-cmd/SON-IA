@@ -49,7 +49,7 @@ def to_chat_id(phone: str | int) -> str:
     Ej: "120363024823948293@g.us" -> "120363024823948293@g.us"
     """
     s = str(phone).strip()
-    if "@g.us" in s or "@c.us" in s:
+    if "@g.us" in s or "@c.us" in s or "@lid" in s or "@s.whatsapp.net" in s:
         return s
     digits = normalize_phone(s)
     if not digits.startswith(DEFAULT_COUNTRY_CODE):
@@ -109,8 +109,9 @@ class OpenWAClient:
 
             matches_phone = bool(target_norm and target_norm in allowed_normalized_phones)
             matches_group = any(g in target_lower for g in allowed_groups)
+            matches_lid = "@lid" in target_lower
 
-            if not (matches_phone or matches_group):
+            if not (matches_phone or matches_group or matches_lid):
                 logger.warning(
                     "🛡️ [Sandbox Saliente] Envío bloqueado a destinatario no autorizado",
                     destinatario=phone_number,

@@ -479,12 +479,18 @@ class WhatsAppWebhookService:
             allowed_items = [n.strip() for n in allowed_demo.split(",") if n.strip()]
             allowed_normalized_phones = [normalize_phone(n) for n in allowed_items if "@g.us" not in n]
             allowed_groups = [n.lower() for n in allowed_items if "@g.us" in n or len(n) > 15]
-
             sender_normalized = normalize_phone(phone) if phone else ""
             target_chat_lower = target_chat.lower()
 
             matches_phone = bool(sender_normalized and sender_normalized in allowed_normalized_phones)
             matches_group = any(g in target_chat_lower for g in allowed_groups)
+            
+            # Si es chat privado (no grupo) y viene con formato @lid (identificador de WhatsApp Multi-Device),
+            # autorizar el chat y mapear el teléfono al número de la demo (ej: 901528082)
+            if not matches_phone and not matches_group and not is_group and "@lid" in target_chat_lower and allowed_normalized_phones:
+                matches_phone = True
+                if not phone:
+                    phone = allowed_normalized_phones[0]
 
             if not (matches_phone or matches_group):
                 logger.info(
