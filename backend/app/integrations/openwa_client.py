@@ -97,13 +97,38 @@ class OpenWAClient:
             {"success": bool, "data": {...}} o {"success": False, "error": ...}
         """
         session = session_name or self.session_name
+        # 🛡️ Blindaje de Seguridad Saliente: Solo permitir envío a números/grupos autorizados
+        allowed_demo = (getattr(settings, "WHATSAPP_DEMO_ALLOWED_PHONE", "") or "").strip()
+        if allowed_demo:
+            allowed_items = [n.strip() for n in allowed_demo.split(",") if n.strip()]
+            allowed_normalized_phones = [normalize_phone(n) for n in allowed_items if "@g.us" not in n]
+            allowed_groups = [n.lower() for n in allowed_items if "@g.us" in n or len(n) > 15]
+
+            target_norm = normalize_phone(phone_number)
+            target_lower = str(phone_number).lower()
+
+            matches_phone = bool(target_norm and target_norm in allowed_normalized_phones)
+            matches_group = any(g in target_lower for g in allowed_groups)
+
+            if not (matches_phone or matches_group):
+                logger.warning(
+                    "🛡️ [Sandbox Saliente] Envío bloqueado a destinatario no autorizado",
+                    destinatario=phone_number,
+                    autorizados=allowed_items,
+                )
+                return {
+                    "success": False,
+                    "error": "Destinatario bloqueado por filtro de seguridad (WHATSAPP_DEMO_ALLOWED_PHONE)",
+                    "blocked_by_sandbox": True,
+                }
+
+        logger.info("📨 OpenWA: enviando mensaje WhatsApp", phone_number=phone_number, session=session)
+
         url = f"{self.base_url}/api/sessions/{session}/messages/send-text"
         payload = {
             "chatId": to_chat_id(phone_number),
             "text": message,
         }
-
-        logger.info("📨 OpenWA: enviando mensaje WhatsApp", phone_number=phone_number, session=session)
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
