@@ -39,7 +39,7 @@ flowchart LR
     E --> F["📈 Resultados:\n-11% DSO | +20% Recupero | 0% Errores"]
 ```
 
-### 🔒 Tres Principios Estratégicos Innegociables:
+### 🔒 Cuatro Principios Estratégicos Innegociables:
 
 1. **Zero-Hallucination (Cero Alucinaciones)**:
    - **Los modelos de IA nunca realizan operaciones matemáticas directas.** Todo cálculo de montos, IGV (18%), redondeos e intereses TAMN es ejecutado por un motor determinista en backend con 99.9% de exactitud matemática. La IA se encarga de razonar, clasificar, empatizar y negociar.
@@ -47,6 +47,8 @@ flowchart LR
    - Casos que presenten anomalías, descuentos superiores a las políticas estándar o clientes de alto riesgo son retenidos automáticamente en una bandeja ejecutiva para aprobación de un supervisor humano con un solo clic.
 3. **Auditoría e Inmutabilidad Total**:
    - Cada decisión, mensaje, emisión de recibo o cálculo de intereses queda registrado en una bitácora de auditoría auditable para cumplimiento con SUNAT y reguladores.
+4. **Accesibilidad Universal y Lenguaje Claro (Inclusión para Adultos Mayores y Todo Usuario)**:
+   - Toda comunicación hacia el cliente prescinde de jergas contables, siglas complejas o menús interactivos frustrantes. La IA explica el recibo de manera sencilla, transparente y con paciencia, facilitando que personas mayores o emprendedores comprendan exactamente qué pagan y cómo pagarlo fácilmente.
 
 ---
 
@@ -168,6 +170,8 @@ Para medir el éxito de la implementación de **SON-IA** en Movistar Empresas, s
 * **Reducción del Churn Involuntario (Bajas por Morosidad)**:
   * *Línea Base*: ~5% anual de clientes corporativos con corte de servicio por falta de facilidades de pago oportunas.
   * *Meta con SON-IA*: **Reducción a menos del 1.5% anual**, preservando la relación comercial y el ingreso recurrente (*MRR*).
+* **Inclusión Digital y Comprensión Universal (Adultos Mayores y PYMES)**:
+  * *Meta con SON-IA*: **95% de satisfacción en comprensión del recibo**, guiando paso a paso por WhatsApp a usuarios sin experiencia tecnológica o adultos mayores con un lenguaje cálido y sin jerga técnica.
 
 ---
 
