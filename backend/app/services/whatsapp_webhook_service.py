@@ -65,50 +65,58 @@ class WhatsAppWebhookService:
         )
         body = str(body).strip() if body else ""
 
-        from_wid = (
-            data.get("from")
-            or data.get("chatId")
-            or data.get("fromMe")
-            or (data.get("key") or {}).get("remoteJid")
-            or (data.get("sender") or {}).get("id")
-        )
-
         from_me = bool(
             data.get("fromMe")
             or (data.get("sender") or {}).get("isMe")
             or data.get("from_me")
+            or payload.get("event") == "message.sent"
         )
 
-        chat_id_str = str(from_wid) if from_wid else ""
+        # Buscar el ID del chat / grupo en varios campos posibles de OpenWA
+        chat_id_candidates = [
+            data.get("chatId"),
+            (data.get("chat") or {}).get("id") if isinstance(data.get("chat"), dict) else None,
+            (data.get("key") or {}).get("remoteJid") if isinstance(data.get("key"), dict) else None,
+            data.get("to"),
+            data.get("from"),
+            (data.get("sender") or {}).get("id") if isinstance(data.get("sender"), dict) else None,
+        ]
+
+        # Priorizar el que sea un grupo (@g.us) si existe
+        group_candidate = next((str(c) for c in chat_id_candidates if c and "@g.us" in str(c)), None)
+        chat_id_str = group_candidate or next((str(c) for c in chat_id_candidates if c), "")
+
         is_group = "@g.us" in chat_id_str or bool(data.get("isGroupMsg") or data.get("isGroup"))
 
         # Determinar el autor del mensaje (si es grupo, buscar quién escribió)
         author_wid = (
             data.get("author")
             or data.get("participant")
-            or ((data.get("key") or {}).get("participant"))
-            or from_wid
+            or ((data.get("key") or {}).get("participant") if isinstance(data.get("key"), dict) else None)
+            or data.get("from")
         )
 
         phone = None
         if author_wid:
             wid = str(author_wid).split("@")[0]
             phone = normalize_phone(wid)
-        elif from_wid:
-            wid = str(from_wid).split("@")[0]
+        elif chat_id_str and not is_group:
+            wid = str(chat_id_str).split("@")[0]
             phone = normalize_phone(wid)
 
-        target_chat = chat_id_str if is_group else (phone or "")
+        target_chat = chat_id_str if is_group else (phone or chat_id_str)
 
         logger.info(
-            "📥 WhatsApp: mensaje entrante",
+            "📥 WhatsApp: mensaje recibido",
+            body=body[:80],
             phone=phone,
             chat_id=chat_id_str,
             is_group=is_group,
-            body=body[:80],
+            group_id=chat_id_str if is_group else None,
             from_me=from_me,
             event_type=payload.get("event")
         )
+        return body, phone, target_chat, is_group, from_me
         return body, phone, target_chat, is_group, from_me
 
     async def _find_client(self, db: AsyncSession, phone: str) -> Optional[BSSCliente]:
