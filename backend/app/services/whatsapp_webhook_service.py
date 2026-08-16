@@ -119,21 +119,56 @@ class WhatsAppWebhookService:
             event_type=payload.get("event")
         )
         return body, phone, target_chat, is_group, from_me
-        return body, phone, target_chat, is_group, from_me
 
-    async def _find_client(self, db: AsyncSession, phone: str) -> Optional[BSSCliente]:
-        """Busca al cliente por su número de celular (columna numero_celular)."""
-        result = await db.execute(
-            select(BSSCliente).where(
-                BSSCliente.numero_celular.like(f"%{phone[-9:]}") if phone else False
+    async def _find_client(self, db: AsyncSession, phone: Optional[str] = None, body: Optional[str] = None) -> Optional[BSSCliente]:
+        """
+        Busca al cliente por:
+        1. Su número de celular de remitente (columna numero_celular).
+        2. Un número de celular peruano de 9 dígitos presente en el texto del mensaje (ej: 901528082).
+        3. Un número de RUC peruano de 11 dígitos presente en el texto del mensaje (ej: 2099999001).
+        """
+        cliente = None
+
+        # 1. Buscar por número remitente
+        if phone:
+            norm_phone = phone[-9:]
+            result = await db.execute(
+                select(BSSCliente).where(BSSCliente.numero_celular.like(f"%{norm_phone}"))
             )
-        )
-        cliente = result.scalars().first()
+            cliente = result.scalars().first()
+
+        # 2. Si no se encontró y hay texto, buscar celular peruano de 9 dígitos en el cuerpo del mensaje
+        if not cliente and body:
+            phone_match = re.search(r"\b(9\d{8})\b", body)
+            if phone_match:
+                extracted_phone = phone_match.group(1)
+                result = await db.execute(
+                    select(BSSCliente).where(BSSCliente.numero_celular.like(f"%{extracted_phone}"))
+                )
+                cliente = result.scalars().first()
+                if cliente:
+                    logger.info("👤 Cliente identificado por celular en texto", phone=extracted_phone,
+                                ruc=cliente.numero_identificacion_fiscal, nombre=cliente.razon_social)
+
+        # 3. Si aún no se encontró, buscar RUC de 11 dígitos en el cuerpo del mensaje
+        if not cliente and body:
+            ruc_match = re.search(r"\b((?:10|20)\d{9})\b", body)
+            if ruc_match:
+                extracted_ruc = ruc_match.group(1)
+                result = await db.execute(
+                    select(BSSCliente).where(BSSCliente.numero_identificacion_fiscal == extracted_ruc)
+                )
+                cliente = result.scalars().first()
+                if cliente:
+                    logger.info("👤 Cliente identificado por RUC en texto", ruc=extracted_ruc,
+                                nombre=cliente.razon_social)
+
         if cliente:
-            logger.info("👤 Cliente identificado", ruc=cliente.numero_identificacion_fiscal,
+            logger.info("👤 Cliente final identificado", ruc=cliente.numero_identificacion_fiscal,
                         nombre=cliente.razon_social)
         else:
-            logger.warning("🚫 Cliente NO encontrado para teléfono", phone=phone)
+            logger.warning("🚫 Cliente NO encontrado para teléfono o mensaje", phone=phone, body=body)
+
         return cliente
 
     async def _interpret(self, message: str) -> Dict[str, Any]:
@@ -161,6 +196,10 @@ class WhatsAppWebhookService:
             intent = "saludo"
         elif any(kw in message_lower for kw in ["gracias", "ok", "listo", "perfecto", "muchas gracias", "vale"]):
             intent = "despedida"
+
+        # Si el mensaje incluye un celular o RUC y no es una negociación explícita, priorizar consulta de saldo
+        if re.search(r"\b(9\d{8}|(?:10|20)\d{9})\b", message) and intent in ["consulta_general", "consulta_rag"]:
+            intent = "consulta_saldo"
 
         factura_id = factura_match.group(1) if factura_match else None
 
@@ -376,7 +415,7 @@ class WhatsAppWebhookService:
                     "success": True,
                 }
 
-        cliente = await self._find_client(db, phone) if phone else None
+        cliente = await self._find_client(db, phone=phone, body=body)
         intent = await self._interpret(body)
         reply = await self._build_reply(db, cliente, intent, body)
 
