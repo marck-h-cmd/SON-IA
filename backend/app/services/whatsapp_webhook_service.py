@@ -289,8 +289,16 @@ class WhatsAppWebhookService:
         message_lower = message.lower()
         factura_match = re.search(r"factura\s*#?\s*([a-zA-Z0-9\-]+)", message, re.IGNORECASE)
 
-        # 1. Despedida / Agradecimiento
+        # 1. Aceptación de Facilidad / Descuento
         if any(kw in message_lower for kw in [
+            "acepto", "aceptar", "sí acepto", "si acepto", "aplícala", "aplicalas",
+            "aplícalo", "aplicalos", "de acuerdo", "quiero el descuento", "me parece bien",
+            "aplica la opción", "aplica la opcion", "confirmar descuento", "confirmar oferta"
+        ]):
+            intent = "aceptacion_oferta"
+
+        # 2. Despedida / Agradecimiento
+        elif any(kw in message_lower for kw in [
             "muchas gracias", "mil gracias", "gracias", "quedó claro", "quedo claro",
             "quedó muy claro", "quedo muy claro", "todo claro", "todo muy claro",
             "listo gracias", "perfecto gracias", "excelente gracias", "vale gracias",
@@ -439,6 +447,14 @@ class WhatsAppWebhookService:
                 "• Consultar el detalle de tus recibos\n"
                 "• Facilidades y acuerdos de pago\n"
                 "• Información sobre planes y servicios para tu empresa"
+            )
+        if intent_type == "aceptacion_oferta":
+            cod_pago = (cliente.numero_identificacion_fiscal or "")[:10] if cliente else "2099999001"
+            return (
+                f"¡Excelente decisión, {nombre}! 🎉 He registrado la facilidad de pago en el sistema.\n\n"
+                f"• Puedes realizar tu abono seguro aquí: https://www.movistar.com.pe/pagos\n"
+                f"• O desde tu banca móvil / Yape con tu código de pago *{cod_pago}*.\n\n"
+                "Una vez confirmado el abono, nuestro motor de conciliación cruzará el pago, generará la nota de crédito respectiva por el beneficio y actualizará tu estado en el sistema BSS. ¡Muchas gracias por tu preferencia! 🤝"
             )
         if intent_type == "despedida":
             return f"¡Con muchísimo gusto, {nombre}! Que tengas un excelente día. Si necesitas cualquier otra cosa, aquí estamos para ayudarte. 👋✨"
