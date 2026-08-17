@@ -11,7 +11,7 @@ export const dashboardService = {
    */
   async getMetrics(): Promise<DashboardMetrics> {
     const response = await apiClient.get('/dashboard/metrics');
-    return response.data;
+    return response.data.metrics || response.data;
   },
 
   /**
@@ -19,7 +19,7 @@ export const dashboardService = {
    */
   async getAgentesEstado(): Promise<AgentesEstado> {
     const response = await apiClient.get('/dashboard/agentes/estado');
-    return response.data;
+    return response.data.agentes || response.data;
   },
 
   /**
