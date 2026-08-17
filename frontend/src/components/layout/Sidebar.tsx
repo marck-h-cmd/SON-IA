@@ -71,7 +71,7 @@ export const Sidebar: React.FC = () => {
               M
             </span>
             <div>
-              <h1 className="text-lg font-extrabold text-[#00A9E0] tracking-tight">SON-IA</h1>
+              <h1 className="text-lg font-extrabold text-[#00A9E0] tracking-tight">FINIA</h1>
               <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 -mt-1">Movistar B2B</p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export const Sidebar: React.FC = () => {
       <div className="p-4 border-t border-gray-200 dark:border-gray-800">
         {!collapsed && (
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            SON-IA Dashboard v1.0
+            FINIA Dashboard v1.0
           </p>
         )}
       </div>

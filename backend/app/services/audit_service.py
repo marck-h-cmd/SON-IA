@@ -39,7 +39,7 @@ class AuditService:
         entry = {
             "id": str(self._next_id),
             "usuario_id": actor,
-            "usuario_nombre": "Supervisor Humano (HITL)" if "supervisor" in actor else "Agente IA (SON-IA)",
+            "usuario_nombre": "Supervisor Humano (HITL)" if "supervisor" in actor else "Agente IA (FIN-IA)",
             "tipo_accion": act,
             "descripcion": str(detalles.get("descripcion", f"Acción {act} ejecutada en {entidad_tipo}")) if detalles else f"Acción {act}",
             "entidad_tipo": entidad_tipo or "Sistema",

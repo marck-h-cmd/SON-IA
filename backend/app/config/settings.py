@@ -7,10 +7,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """Configuración de la aplicación SON-IA"""
+    """Configuración de la aplicación FINIA"""
     
     # Application
-    APP_NAME: str = "SON-IA"
+    APP_NAME: str = "FINIA"
     APP_VERSION: str = "0.1.0"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SON-IA Dashboard",
+  title: "FINIA Dashboard",
   description: "Dashboard operativo de orquestación de agentes IA",
 };
 

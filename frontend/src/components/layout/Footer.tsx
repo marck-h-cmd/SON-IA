@@ -9,9 +9,9 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Branding */}
           <div>
-            <h3 className="text-lg font-bold text-blue-600 mb-2">SON-IA</h3>
+            <h3 className="text-lg font-bold text-[#00A9E0] mb-2">FINIA</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Sistema de Orquestación de Negocio - Integratel Agéntica
+              Sinergia Operativa y Negociación Inteligente con IA - Movistar Empresas
             </p>
           </div>
 
@@ -42,7 +42,7 @@ export const Footer: React.FC = () => {
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Soporte</h4>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li>
-                <a href="mailto:support@son-ia.local" className="hover:text-blue-600 dark:hover:text-blue-400">
+                <a href="mailto:support@finia.local" className="hover:text-blue-600 dark:hover:text-blue-400">
                   Email Support
                 </a>
               </li>
@@ -86,7 +86,7 @@ export const Footer: React.FC = () => {
         <div className="border-t border-gray-200 dark:border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              © {currentYear} SON-IA. Todos los derechos reservados.
+              © {currentYear} FINIA. Todos los derechos reservados.
             </p>
             <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
               <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400">

@@ -1,5 +1,5 @@
 /**
- * API Types and Interfaces for SON-IA Dashboard
+ * API Types and Interfaces for FINIA Dashboard
  */
 
 // ============ DASHBOARD TYPES ============
