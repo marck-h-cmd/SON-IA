@@ -99,27 +99,19 @@ class CustomerAgent(BaseAgent):
         )
         
         respuesta_texto = ""
-        fuente_usada = "rag_contextual"
+        fuente_usada = "llama-3.3 + RAG"
         
-        # Intentar con Gemini
+        # 1. Generar con LLM Principal (Groq Llama-3.3-70B)
         try:
-            gemini_res = await self.gemini.generate_content(f"{system_prompt}\n\n{user_prompt}")
-            if gemini_res and len(gemini_res.strip()) > 10:
-                respuesta_texto = gemini_res.strip()
-                fuente_usada = "gemini-1.5-pro + RAG"
-        except Exception as e:
-            logger.debug(f"ℹ️ Gemini no disponible, intentando MainLLM: {e}")
-        
-        # Fallback a MainLLM (Groq)
-        if not respuesta_texto:
-            try:
-                llm_res = await self.main_llm.generate_text(user_prompt, system_prompt=system_prompt, max_tokens=500)
-                choices = llm_res.get("choices", [])
-                if choices:
-                    respuesta_texto = choices[0].get("message", {}).get("content", "").strip()
+            llm_res = await self.main_llm.generate_text(user_prompt, system_prompt=system_prompt, max_tokens=500)
+            choices = llm_res.get("choices", [])
+            if choices:
+                content = choices[0].get("message", {}).get("content", "").strip()
+                if content and not content.startswith("Respuesta de"):
+                    respuesta_texto = content
                     fuente_usada = "llama-3.3 + RAG"
-            except Exception as e:
-                logger.debug(f"ℹ️ MainLLM no disponible, usando formateador determinista RAG: {e}")
+        except Exception as e:
+            logger.debug(f"ℹ️ MainLLM no disponible: {e}")
         
         # Fallback determinista seguro
         if not respuesta_texto:
